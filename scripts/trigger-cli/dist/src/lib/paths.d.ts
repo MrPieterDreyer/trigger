@@ -8,6 +8,7 @@ export declare class TriggerPaths {
     readonly humanStatePath: string;
     readonly backlogPath: string;
     constructor(projectRoot: string);
+    toolingDir(): string;
     milestonesDir(): string;
     milestoneDir(milestoneId: string): string;
     milestonePath(milestoneId: string): string;

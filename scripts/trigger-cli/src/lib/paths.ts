@@ -22,6 +22,10 @@ export class TriggerPaths {
     this.backlogPath = path.join(this.planningRoot, "IMPROVEMENT-BACKLOG.md");
   }
 
+  toolingDir(): string {
+    return path.join(this.planningRoot, "tooling");
+  }
+
   milestonesDir(): string {
     return path.join(this.planningRoot, "milestones");
   }

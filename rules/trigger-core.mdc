@@ -24,6 +24,7 @@ AI Product Team framework. State lives in `.trigger/`; all state changes go thro
 | "trigger pause", "save progress" | skill: `pause` |
 | "trigger settings", "change settings", "update config", "configure trigger" | skill: `settings` |
 | "trigger config", "show settings" | CLI: `config get` |
+| "trigger research skills", "recommend skills", "find skills" | skill: `research-skills` |
 | "trigger quick fix", "quick task" | skill: `quick-task` |
 | "trigger review this", "review what I just did" | skill: `auto-review` |
 | "trigger help", "what can trigger do" | skill: `help` |
