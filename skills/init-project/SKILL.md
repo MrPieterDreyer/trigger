@@ -15,12 +15,38 @@ Use when the user says **trigger new project**, **start a new project**, or **in
 
 2. **Detect project type** — Do not infer by hand. The CLI detects from files such as `package.json`, `tsconfig.json`, `*.csproj`, `requirements.txt`, `go.mod`, `Cargo.toml`, and `Gemfile`. `trigger init <name>` performs this.
 
-3. **Ask the user** (required fields first; never assume answers):
-   - Project name (required)
-   - Brief description (optional)
-   - What is this project? Goals, target users, key capabilities (for PROJECT.md)
-   - Trust level: `supervised` (pause at every gate), `balanced` (plan approval + sign-off), `autonomous` (sign-off only). Default: `balanced`.
-   - Git branching: `none`, `per_phase`, or `per_task`. Default: `none`.
+3. **Ask the user** — Never assume defaults. Use the `AskQuestion` tool to collect structured answers before running `init`:
+
+   First, ask for the project name and description in conversation (free text).
+
+   Then use `AskQuestion` for structured choices:
+
+   ```
+   AskQuestion(questions=[
+     {
+       id: "trust_level",
+       prompt: "What trust level should Trigger use for quality gates?",
+       options: [
+         { id: "supervised", label: "Supervised — pause at every quality gate for your approval" },
+         { id: "balanced", label: "Balanced — require approval at plan review and final sign-off" },
+         { id: "autonomous", label: "Autonomous — only pause at final sign-off" }
+       ]
+     },
+     {
+       id: "git_branching",
+       prompt: "How should Trigger handle Git branching?",
+       options: [
+         { id: "none", label: "None — work on the current branch" },
+         { id: "per_phase", label: "Per phase — create a branch for each phase" },
+         { id: "per_task", label: "Per task — create a branch for each task" }
+       ]
+     }
+   ])
+   ```
+
+   Also ask in conversation: What is this project? Goals, target users, key capabilities (used for PROJECT.md).
+
+   **Do NOT skip the AskQuestion step.** Every project must have explicit user choices for trust level and branching.
 
 4. **Initialize** — Run:
 
