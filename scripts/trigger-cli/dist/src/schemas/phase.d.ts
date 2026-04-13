@@ -20,6 +20,7 @@ export declare const PhaseSchema: z.ZodObject<{
         enabled: z.ZodOptional<z.ZodUnion<readonly [z.ZodBoolean, z.ZodLiteral<"auto">]>>;
         always: z.ZodOptional<z.ZodBoolean>;
     }, z.core.$strip>>>;
+    batch_signoff: z.ZodOptional<z.ZodBoolean>;
 }, z.core.$strip>;
 export type Phase = z.infer<typeof PhaseSchema>;
 //# sourceMappingURL=phase.d.ts.map

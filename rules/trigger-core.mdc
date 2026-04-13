@@ -1,146 +1,38 @@
 ---
-description: "Trigger Framework — routes natural language requests to Trigger workflows for project planning, building, reviewing, and sign-off. Core routing rule for the AI Product Team."
+description: "Trigger Framework — routes natural language to skills. Read trigger-reference.mdc for CLI docs, team roles, and paths."
 alwaysApply: true
 ---
 
 # Trigger Framework
 
-Trigger is an AI Product Team framework that orchestrates cost-optimized model routing, mandatory quality gates, and automated build-review pipelines. It manages project state through a CLI toolkit and `.trigger/` directory.
+AI Product Team framework. State lives in `.trigger/`; all state changes go through the CLI.
 
-## Detecting Trigger Requests
+## Routing
 
-When the user says anything matching the trigger phrases below, follow the corresponding workflow. Read the skill file, read any files it references, then execute its steps.
-
-### Project Initialization
-
-| Trigger phrases | Skill |
+| Phrases | Target |
 |---|---|
-| "trigger new project", "start a new project", "initialize project" | `init-project` |
+| "trigger new project", "start a new project", "initialize project" | skill: `init-project` |
+| "trigger new milestone", "start milestone N" | CLI: `milestone create` |
+| "trigger milestone status", "show milestones" | CLI: `milestone list` |
+| "trigger plan phase N", "plan the next phase" | skill: `plan-phase` |
+| "trigger build phase N", "execute phase N", "build it" | skill: `execute-phase` |
+| "trigger build task N", "build the next task" | skill: `execute-task` |
+| "trigger review", "review the changes" | skill: `review-changes` |
+| "trigger status", "where am I", "what's next" | skill: `progress` |
+| "trigger sign off", "approve this", "looks good" | skill: `sign-off` |
+| "trigger resume", "continue work" | skill: `resume` |
+| "trigger pause", "save progress" | skill: `pause` |
+| "trigger config", "show settings" | CLI: `config get` |
+| "trigger quick fix", "quick task" | skill: `quick-task` |
+| "trigger review this", "review what I just did" | skill: `auto-review` |
+| "trigger help", "what can trigger do" | skill: `help` |
 
-### Milestone Management
+## CLI
 
-| Trigger phrases | Action |
-|---|---|
-| "trigger new milestone", "start milestone N", "next milestone" | Create a new milestone via CLI `milestone create`, set as active |
-| "trigger milestone status", "show milestones" | List milestones via CLI `milestone list` |
+Bundled at `<PLUGIN_ROOT>/scripts/trigger-cli/`. Resolve `<PLUGIN_ROOT>` from this rule file's path (parent of `rules/`).
 
-### Phase Planning
-
-| Trigger phrases | Skill |
-|---|---|
-| "trigger plan phase N", "plan the next phase", "create phase" | `plan-phase` |
-
-### Phase Execution
-
-| Trigger phrases | Skill |
-|---|---|
-| "trigger build phase N", "execute phase N", "build it" | `execute-phase` |
-
-### Single Task
-
-| Trigger phrases | Skill |
-|---|---|
-| "trigger build task N", "build the next task" | `execute-task` |
-
-### Review
-
-| Trigger phrases | Skill |
-|---|---|
-| "trigger review", "review the changes" | `review-changes` |
-
-### Progress & Status
-
-| Trigger phrases | Skill |
-|---|---|
-| "trigger status", "where am I", "what's next" | `progress` |
-
-### Sign-off
-
-| Trigger phrases | Skill |
-|---|---|
-| "trigger sign off", "approve this", "looks good" | `sign-off` |
-
-### Session Management
-
-| Trigger phrases | Skill |
-|---|---|
-| "trigger resume", "continue work", "pick up where I left off" | `resume` |
-| "trigger pause", "save progress", "stopping for now" | `pause` |
-
-### Configuration
-
-| Trigger phrases | Action |
-|---|---|
-| "trigger config", "show settings", "change trust level" | Read/update `.trigger/trigger.json` via CLI `config get/set` |
-
-### Quick Tasks
-
-| Trigger phrases | Skill |
-|---|---|
-| "trigger quick fix", "quick task" | `quick-task` |
-
-### Help
-
-| Trigger phrases | Skill |
-|---|---|
-| "trigger help", "what can trigger do" | `help` |
-
-## How to Execute a Trigger Workflow
-
-1. **Read the skill file** — Cursor discovers skills by name from this plugin's `skills/` directory
-2. **Resolve the CLI path** (see CLI Tool section below)
-3. **Read `.trigger/state.json`** via CLI: `node <TRIGGER_CLI>/dist/bin/trigger.js state get`
-4. **Read `.trigger/trigger.json`** via CLI: `node <TRIGGER_CLI>/dist/bin/trigger.js config get`
-5. **Follow the skill steps** in order, respecting all gates and checkpoints
-
-## CLI Tool
-
-The Trigger CLI handles all state operations. It is bundled with this plugin under `scripts/trigger-cli/`.
-
-**Resolve the CLI path** — determine where this plugin is installed and use:
-
-```bash
-node <PLUGIN_ROOT>/scripts/trigger-cli/dist/bin/trigger.js <command> [args]
+```
+node <PLUGIN_ROOT>/scripts/trigger-cli/dist/bin/trigger.js <command>
 ```
 
-`<PLUGIN_ROOT>` is the directory containing this rule file's parent (`rules/`). For local installs this is `~/.cursor/plugins/local/trigger/`. For marketplace installs, Cursor resolves it from the plugin cache — the path is visible in the absolute path of any loaded rule or skill file.
-
-**First-time setup:** Run `npm install --production` inside `<PLUGIN_ROOT>/scripts/trigger-cli/` to install runtime dependencies (commander, zod, chalk).
-
-Available commands:
-- `init <name>` — initialize a project
-- `state get` / `state set <key> <value>` — read/update state
-- `config get` — read config
-- `milestone create <id> <name>` / `milestone list` / `milestone status <id>`
-- `phase create <milestoneId> <id> <name>` / `phase list <milestoneId>`
-- `task create <milestoneId> <phaseId> <id> <name>` / `task advance <m> <p> <t> <status>` / `task status <m> <p> <t>`
-- `validate` — validate project integrity
-
-## Team Roles
-
-Trigger orchestrates an AI Product Team. Each role is defined as an agent file in this plugin's `agents/` directory and spawned via `Task()`:
-
-| Role | Agent file | Default Model | Subagent Type |
-|---|---|---|---|
-| Researcher | `researcher.md` | expensive | `repo-research-analyst` |
-| Planner | `planner.md` | expensive | `architecture-strategist` |
-| Plan Reviewer | `plan-reviewer.md` | expensive | `correctness-reviewer` |
-| Builder | `builder.md` | fast | `fullstack-developer` |
-| Code Reviewer | `code-reviewer.md` | expensive | `code-reviewer` |
-| Security Reviewer | `security-reviewer.md` | expensive | `security-reviewer` |
-| Performance Reviewer | `performance-reviewer.md` | expensive | `performance-reviewer` |
-| Accessibility Reviewer | `accessibility-reviewer.md` | expensive | `accessibility-tester` |
-| Database Reviewer | `database-reviewer.md` | expensive | `data-migrations-reviewer` |
-| DevOps Reviewer | `devops-reviewer.md` | expensive | `devops-engineer` |
-| Documentation Writer | `documentation-writer.md` | fast | `api-documenter` |
-| QA Verifier | `qa-verifier.md` | fast | `qa-expert` |
-
-## Key Paths
-
-- Plugin root: the directory containing `.cursor-plugin/plugin.json`
-- Skills: `<plugin-root>/skills/`
-- Agents: `<plugin-root>/agents/`
-- CLI: `<plugin-root>/scripts/trigger-cli/`
-- Planning output: `.trigger/` (in the user's project)
-- Project config: `.trigger/trigger.json`
-- Project state: `.trigger/state.json`
+For full command reference, team roles, and paths: read rule `trigger-reference.mdc`.

@@ -28,6 +28,7 @@ export declare const TaskSchema: z.ZodObject<{
     acceptance_criteria: z.ZodDefault<z.ZodArray<z.ZodString>>;
     test_requirements: z.ZodOptional<z.ZodArray<z.ZodString>>;
     domains: z.ZodDefault<z.ZodArray<z.ZodString>>;
+    parallel_group: z.ZodOptional<z.ZodString>;
     created_at: z.ZodString;
     updated_at: z.ZodString;
     history: z.ZodDefault<z.ZodArray<z.ZodObject<{

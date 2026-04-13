@@ -1,6 +1,6 @@
 ---
-description: "Trigger Quality Gates — enforces that all verification checks pass before declaring work complete, and that review verdicts are respected."
-alwaysApply: true
+description: "Trigger Quality Gates — enforces that all verification checks pass before declaring work complete, and that review verdicts are respected. Read when executing build-review pipeline."
+alwaysApply: false
 ---
 
 # Trigger Quality Gates

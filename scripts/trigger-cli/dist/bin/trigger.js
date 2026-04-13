@@ -7,6 +7,7 @@ import { createMilestone, listMilestones, getMilestoneStatus } from "../src/comm
 import { createPhase, listPhases } from "../src/commands/phase.js";
 import { createTask, advanceTask, getTaskStatus } from "../src/commands/task.js";
 import { validateProject } from "../src/commands/validate.js";
+import { getSummary } from "../src/commands/summary.js";
 const program = new Command();
 program
     .name("trigger")
@@ -177,6 +178,7 @@ taskCmd
     .argument("<name>", "Task name")
     .option("--criteria <criteria>", "Comma-separated acceptance criteria", (v) => v.split(","))
     .option("--domains <domains>", "Comma-separated domains", (v) => v.split(","))
+    .option("--parallel-group <group>", "Parallel execution group (tasks in the same group run concurrently)")
     .action(async (milestoneId, phaseId, id, name, opts) => {
     try {
         const task = await createTask(process.cwd(), milestoneId, phaseId, {
@@ -184,6 +186,7 @@ taskCmd
             name,
             acceptance_criteria: opts.criteria,
             domains: opts.domains,
+            parallel_group: opts.parallelGroup,
         });
         console.log(JSON.stringify(task, null, 2));
     }
@@ -219,6 +222,20 @@ taskCmd
     try {
         const task = await getTaskStatus(process.cwd(), milestoneId, phaseId, taskId);
         console.log(JSON.stringify(task, null, 2));
+    }
+    catch (err) {
+        console.error(`Error: ${err.message}`);
+        process.exit(1);
+    }
+});
+// --- Summary command ---
+program
+    .command("summary")
+    .description("Compact dashboard of active milestone, phase, task, and settings")
+    .action(async () => {
+    try {
+        const summary = await getSummary(process.cwd());
+        console.log(JSON.stringify(summary, null, 2));
     }
     catch (err) {
         console.error(`Error: ${err.message}`);

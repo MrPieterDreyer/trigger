@@ -4,11 +4,19 @@ export class TriggerPaths {
     planningRoot;
     configPath;
     statePath;
+    projectPath;
+    requirementsPath;
+    humanStatePath;
+    backlogPath;
     constructor(projectRoot) {
         this.projectRoot = projectRoot;
         this.planningRoot = path.join(projectRoot, ".trigger");
         this.configPath = path.join(this.planningRoot, "trigger.json");
         this.statePath = path.join(this.planningRoot, "state.json");
+        this.projectPath = path.join(this.planningRoot, "PROJECT.md");
+        this.requirementsPath = path.join(this.planningRoot, "REQUIREMENTS.md");
+        this.humanStatePath = path.join(this.planningRoot, "STATE.md");
+        this.backlogPath = path.join(this.planningRoot, "IMPROVEMENT-BACKLOG.md");
     }
     milestonesDir() {
         return path.join(this.planningRoot, "milestones");

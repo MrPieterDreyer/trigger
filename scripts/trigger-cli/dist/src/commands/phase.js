@@ -18,6 +18,7 @@ export async function createPhase(projectRoot, milestoneId, options) {
         created_at: now,
         updated_at: now,
         team_overrides: options.team_overrides,
+        batch_signoff: options.batch_signoff,
     });
     const phaseDir = paths.phaseDir(milestoneId, options.id);
     await fm.ensureDir(phaseDir);

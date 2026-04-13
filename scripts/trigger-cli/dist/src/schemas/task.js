@@ -29,6 +29,7 @@ export const TaskSchema = z.object({
     acceptance_criteria: z.array(z.string()).default([]),
     test_requirements: z.array(z.string()).optional(),
     domains: z.array(z.string()).default([]),
+    parallel_group: z.string().optional(),
     created_at: z.string(),
     updated_at: z.string(),
     history: z.array(StateTransition).default([]),

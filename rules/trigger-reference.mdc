@@ -1,0 +1,71 @@
+---
+description: "Trigger Reference — full CLI command reference, team roles, execution steps, and key paths. Read when executing a Trigger skill."
+alwaysApply: false
+---
+
+# Trigger Reference
+
+## How to Execute a Trigger Workflow
+
+1. Read the skill file (Cursor discovers skills by name from `skills/`)
+2. Resolve the CLI path (see below)
+3. Run `trigger state get` and `trigger config get` for context (or `trigger summary` for a compact dashboard)
+4. Follow the skill steps, respecting all gates
+
+## CLI Tool
+
+Bundled at `<PLUGIN_ROOT>/scripts/trigger-cli/`. `<PLUGIN_ROOT>` is the directory containing this rule's parent (`rules/`). For local installs: `~/.cursor/plugins/local/trigger/`.
+
+**First-time setup:** `npm install --production` inside `<PLUGIN_ROOT>/scripts/trigger-cli/`.
+
+### Commands
+
+| Command | Description |
+|---|---|
+| `init <name>` | Initialize a project |
+| `state get` | Print current state JSON |
+| `state set <key> <value>` | Update a state field |
+| `config get` | Print current config JSON |
+| `summary` | Compact dashboard of active milestone/phase/task/settings |
+| `milestone create <id> <name>` | Create a milestone |
+| `milestone list` | List all milestones |
+| `milestone status <id>` | Get milestone status |
+| `phase create <milestoneId> <id> <name>` | Create a phase |
+| `phase list <milestoneId>` | List phases under a milestone |
+| `task create <m> <p> <id> <name>` | Create a task (supports `--parallel-group`, `--criteria`, `--domains`). Task IDs must follow `p{N}-t{M}` (e.g. `p1-t1`, `p1-t2`) to match the phase naming convention. |
+| `task advance <m> <p> <t> <status>` | Advance task status |
+| `task status <m> <p> <t>` | Get task status |
+| `validate` | Validate project integrity |
+
+## Team Roles
+
+Each role is an agent file in `agents/`, spawned via `Task()`:
+
+| Role | Agent | Model | Subagent Type |
+|---|---|---|---|
+| Researcher | `researcher.md` | expensive | `repo-research-analyst` |
+| Planner | `planner.md` | expensive | `architecture-strategist` |
+| Plan Reviewer | `plan-reviewer.md` | expensive | `correctness-reviewer` |
+| Builder | `builder.md` | fast | `fullstack-developer` |
+| Code Reviewer | `code-reviewer.md` | expensive | `code-reviewer` |
+| Security Reviewer | `security-reviewer.md` | expensive | `security-reviewer` |
+| Performance Reviewer | `performance-reviewer.md` | expensive | `performance-reviewer` |
+| Accessibility Reviewer | `accessibility-reviewer.md` | expensive | `accessibility-tester` |
+| Database Reviewer | `database-reviewer.md` | expensive | `data-migrations-reviewer` |
+| DevOps Reviewer | `devops-reviewer.md` | expensive | `devops-engineer` |
+| Documentation Writer | `documentation-writer.md` | fast | `api-documenter` |
+| QA Verifier | `qa-verifier.md` | fast | `qa-expert` |
+
+For stack-specific projects, Builder subagent_type can be adjusted (e.g. `react-specialist`, `python-pro`, `golang-pro`).
+
+## Key Paths
+
+- Plugin root: directory containing `.cursor-plugin/plugin.json`
+- Skills: `<plugin-root>/skills/`
+- Agents: `<plugin-root>/agents/`
+- CLI: `<plugin-root>/scripts/trigger-cli/`
+- Project state: `.trigger/` (in user's project)
+- Config: `.trigger/trigger.json`
+- State: `.trigger/state.json`
+- Planning docs: `.trigger/PROJECT.md`, `.trigger/REQUIREMENTS.md`, `.trigger/STATE.md`, `.trigger/IMPROVEMENT-BACKLOG.md`
+- Milestone roadmap: `.trigger/milestones/<id>/ROADMAP.md`

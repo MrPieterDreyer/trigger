@@ -18,6 +18,7 @@ export const PhaseSchema = z.object({
   created_at: z.string(),
   updated_at: z.string(),
   team_overrides: z.record(z.string(), PhaseTeamOverride).optional(),
+  batch_signoff: z.boolean().optional(),
 });
 
 export type Phase = z.infer<typeof PhaseSchema>;

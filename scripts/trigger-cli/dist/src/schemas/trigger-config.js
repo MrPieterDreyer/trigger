@@ -68,6 +68,19 @@ export const TriggerConfigSchema = z.object({
         max_review_cycles: 3,
         escalate_to_expensive: true,
     }),
+    parallelism: z
+        .object({
+        reviews: z.boolean().default(true),
+        tasks: z.boolean().default(true),
+        max_concurrent_tasks: z.number().int().min(1).default(3),
+        max_concurrent_reviews: z.number().int().min(1).default(6),
+    })
+        .default({
+        reviews: true,
+        tasks: true,
+        max_concurrent_tasks: 3,
+        max_concurrent_reviews: 6,
+    }),
     reports: z
         .object({
         format: z.enum(["markdown"]).default("markdown"),
@@ -78,6 +91,21 @@ export const TriggerConfigSchema = z.object({
         format: "markdown",
         include_timestamps: true,
         include_model_used: true,
+    }),
+    guardian: z
+        .object({
+        auto_review: z.boolean().default(true),
+        smart_escalation: z.boolean().default(true),
+        review_threshold_files: z.number().int().min(1).default(3),
+        review_threshold_lines: z.number().int().min(1).default(50),
+        skip_patterns: z.array(z.string()).default(["*.md", "*.json", ".trigger/**"]),
+    })
+        .default({
+        auto_review: true,
+        smart_escalation: true,
+        review_threshold_files: 3,
+        review_threshold_lines: 50,
+        skip_patterns: ["*.md", "*.json", ".trigger/**"],
     }),
 });
 export { TrustLevel, ModelTier, EnabledState, TeamRoleConfig };

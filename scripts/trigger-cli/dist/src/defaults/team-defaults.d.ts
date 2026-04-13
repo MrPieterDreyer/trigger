@@ -73,4 +73,11 @@ export declare const DEFAULT_ESCALATION: {
     max_review_cycles: number;
     escalate_to_expensive: boolean;
 };
+export declare const DEFAULT_GUARDIAN: {
+    auto_review: boolean;
+    smart_escalation: boolean;
+    review_threshold_files: number;
+    review_threshold_lines: number;
+    skip_patterns: string[];
+};
 //# sourceMappingURL=team-defaults.d.ts.map

@@ -21,5 +21,6 @@
   "skills": "./skills/",
   "rules": "./rules/",
   "agents": "./agents/",
-  "commands": "./commands/"
+  "commands": "./commands/",
+  "hooks": "./hooks/hooks-cursor.json"
 }

@@ -141,12 +141,25 @@ export declare const TriggerConfigSchema: z.ZodObject<{
         max_review_cycles: z.ZodDefault<z.ZodNumber>;
         escalate_to_expensive: z.ZodDefault<z.ZodBoolean>;
     }, z.core.$strip>>;
+    parallelism: z.ZodDefault<z.ZodObject<{
+        reviews: z.ZodDefault<z.ZodBoolean>;
+        tasks: z.ZodDefault<z.ZodBoolean>;
+        max_concurrent_tasks: z.ZodDefault<z.ZodNumber>;
+        max_concurrent_reviews: z.ZodDefault<z.ZodNumber>;
+    }, z.core.$strip>>;
     reports: z.ZodDefault<z.ZodObject<{
         format: z.ZodDefault<z.ZodEnum<{
             markdown: "markdown";
         }>>;
         include_timestamps: z.ZodDefault<z.ZodBoolean>;
         include_model_used: z.ZodDefault<z.ZodBoolean>;
+    }, z.core.$strip>>;
+    guardian: z.ZodDefault<z.ZodObject<{
+        auto_review: z.ZodDefault<z.ZodBoolean>;
+        smart_escalation: z.ZodDefault<z.ZodBoolean>;
+        review_threshold_files: z.ZodDefault<z.ZodNumber>;
+        review_threshold_lines: z.ZodDefault<z.ZodNumber>;
+        skip_patterns: z.ZodDefault<z.ZodArray<z.ZodString>>;
     }, z.core.$strip>>;
 }, z.core.$strip>;
 export type TriggerConfig = z.infer<typeof TriggerConfigSchema>;

@@ -16,6 +16,7 @@ export async function createTask(projectRoot, milestoneId, phaseId, options) {
         acceptance_criteria: options.acceptance_criteria ?? [],
         test_requirements: options.test_requirements,
         domains: options.domains ?? [],
+        parallel_group: options.parallel_group,
         created_at: now,
         updated_at: now,
         history: [],

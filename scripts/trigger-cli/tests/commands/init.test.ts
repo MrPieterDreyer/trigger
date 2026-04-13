@@ -79,6 +79,18 @@ describe("initProject", () => {
     expect(parsed.project.description).toBe("A test project");
   });
 
+  it("includes default parallelism config", async () => {
+    const { config } = await initProject(tmpDir, { name: "parallel-app" });
+    const parsed = TriggerConfigSchema.parse(config);
+
+    expect(parsed.parallelism).toEqual({
+      reviews: true,
+      tasks: true,
+      max_concurrent_tasks: 3,
+      max_concurrent_reviews: 6,
+    });
+  });
+
   it("persists trigger.json to disk", async () => {
     await initProject(tmpDir, { name: "disk-app" });
 

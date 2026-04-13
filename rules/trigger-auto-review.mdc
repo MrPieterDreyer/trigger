@@ -1,0 +1,27 @@
+---
+description: "Trigger Auto-Review — instructions for reviewing code changes after substantial edits. Read when the stop hook or user triggers a review."
+alwaysApply: false
+---
+
+# Auto-Review Protocol
+
+## Threshold
+
+Read `guardian` config from `.trigger/trigger.json` if it exists. Use `review_threshold_files` and `review_threshold_lines` from config, or defaults (3 files / 50 lines) if no config found.
+
+Skip files matching `guardian.skip_patterns` from config (default: `*.md`, `*.json`, `.trigger/**`). Always skip Trigger state files (`.trigger/**/*.json`).
+
+## Review
+
+Spawn `Task(subagent_type="code-reviewer")` with the git diff (or file summaries if diff is too large). The reviewer checks:
+- Correctness: logic errors, missing edge cases, off-by-one
+- Error handling: uncaught exceptions, missing validation
+- Security basics: injection, auth bypass, secrets in code
+- Consistency: naming, patterns matching existing codebase
+
+## Present findings
+
+Do NOT write review files. Present findings **inline** in your response:
+- P0/P1 issues: fix them immediately, then note what was fixed
+- P2/P3 issues: mention them as suggestions
+- Clean review: one line — "Auto-review: no issues found"

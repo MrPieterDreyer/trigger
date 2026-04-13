@@ -25,4 +25,11 @@ export const DEFAULT_ESCALATION = {
     max_review_cycles: 3,
     escalate_to_expensive: true,
 };
+export const DEFAULT_GUARDIAN = {
+    auto_review: true,
+    smart_escalation: true,
+    review_threshold_files: 3,
+    review_threshold_lines: 50,
+    skip_patterns: ["*.md", "*.json", ".trigger/**"],
+};
 //# sourceMappingURL=team-defaults.js.map

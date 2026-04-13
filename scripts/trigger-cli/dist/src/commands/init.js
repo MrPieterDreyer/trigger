@@ -3,7 +3,7 @@ import { FileManager } from "../lib/file-manager.js";
 import { ProjectDetector } from "../lib/detector.js";
 import { TriggerConfigSchema } from "../schemas/trigger-config.js";
 import { StateSchema } from "../schemas/state.js";
-import { DEFAULT_TEAM, DEFAULT_ACTIVATION_RULES, DEFAULT_ESCALATION } from "../defaults/team-defaults.js";
+import { DEFAULT_TEAM, DEFAULT_ACTIVATION_RULES, DEFAULT_ESCALATION, DEFAULT_GUARDIAN } from "../defaults/team-defaults.js";
 export async function initProject(projectRoot, options) {
     const paths = new TriggerPaths(projectRoot);
     const fm = new FileManager();
@@ -25,6 +25,7 @@ export async function initProject(projectRoot, options) {
         team: DEFAULT_TEAM,
         activation_rules: DEFAULT_ACTIVATION_RULES,
         escalation: DEFAULT_ESCALATION,
+        guardian: DEFAULT_GUARDIAN,
     });
     const stateData = StateSchema.parse({
         active_milestone: null,

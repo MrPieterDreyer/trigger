@@ -4,7 +4,7 @@ import { ProjectDetector } from "../lib/detector.js";
 import type { DetectionResult } from "../lib/detector.js";
 import { TriggerConfigSchema, type TriggerConfig } from "../schemas/trigger-config.js";
 import { StateSchema, type State } from "../schemas/state.js";
-import { DEFAULT_TEAM, DEFAULT_ACTIVATION_RULES, DEFAULT_ESCALATION } from "../defaults/team-defaults.js";
+import { DEFAULT_TEAM, DEFAULT_ACTIVATION_RULES, DEFAULT_ESCALATION, DEFAULT_GUARDIAN } from "../defaults/team-defaults.js";
 
 export interface InitOptions {
   name: string;
@@ -39,6 +39,7 @@ export async function initProject(
     team: DEFAULT_TEAM,
     activation_rules: DEFAULT_ACTIVATION_RULES,
     escalation: DEFAULT_ESCALATION,
+    guardian: DEFAULT_GUARDIAN,
   });
 
   const stateData = StateSchema.parse({

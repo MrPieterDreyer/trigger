@@ -70,6 +70,25 @@ describe("task commands", () => {
       expect(task.domains).toEqual(["backend"]);
       expect(task.test_requirements).toEqual(["unit tests"]);
     });
+
+    it("stores parallel_group when provided", async () => {
+      const task = await createTask(tmpDir, "v1", "p1", {
+        id: "t1",
+        name: "Task 1",
+        parallel_group: "group-a",
+      });
+
+      expect(task.parallel_group).toBe("group-a");
+    });
+
+    it("omits parallel_group when not provided", async () => {
+      const task = await createTask(tmpDir, "v1", "p1", {
+        id: "t1",
+        name: "Task 1",
+      });
+
+      expect(task.parallel_group).toBeUndefined();
+    });
   });
 
   describe("advanceTask", () => {

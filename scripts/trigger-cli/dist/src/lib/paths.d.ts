@@ -3,6 +3,10 @@ export declare class TriggerPaths {
     readonly planningRoot: string;
     readonly configPath: string;
     readonly statePath: string;
+    readonly projectPath: string;
+    readonly requirementsPath: string;
+    readonly humanStatePath: string;
+    readonly backlogPath: string;
     constructor(projectRoot: string);
     milestonesDir(): string;
     milestoneDir(milestoneId: string): string;

@@ -16,6 +16,7 @@ export async function createPhase(
     description?: string;
     domains?: string[];
     team_overrides?: Record<string, unknown>;
+    batch_signoff?: boolean;
   },
 ): Promise<Phase> {
   const paths = new TriggerPaths(projectRoot);
@@ -31,6 +32,7 @@ export async function createPhase(
     created_at: now,
     updated_at: now,
     team_overrides: options.team_overrides,
+    batch_signoff: options.batch_signoff,
   });
 
   const phaseDir = paths.phaseDir(milestoneId, options.id);

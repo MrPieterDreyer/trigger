@@ -18,6 +18,7 @@ export async function createTask(
     acceptance_criteria?: string[];
     domains?: string[];
     test_requirements?: string[];
+    parallel_group?: string;
   },
 ): Promise<Task> {
   const paths = new TriggerPaths(projectRoot);
@@ -31,6 +32,7 @@ export async function createTask(
     acceptance_criteria: options.acceptance_criteria ?? [],
     test_requirements: options.test_requirements,
     domains: options.domains ?? [],
+    parallel_group: options.parallel_group,
     created_at: now,
     updated_at: now,
     history: [],

@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "hooks": {
+    "stop": [
+      {
+        "type": "prompt",
+        "prompt": "If a .trigger/trigger.json exists in this project, read guardian.auto_review from it. If auto_review is false, do nothing. Otherwise use guardian.review_threshold_files and guardian.review_threshold_lines as thresholds (defaults: 3 files, 50 lines). Check if this turn edited that many code files or lines (excluding files matching guardian.skip_patterns). If thresholds met: read rule trigger-auto-review.mdc, then spawn a code-reviewer Task() to review the diff. Present findings inline. If no trigger.json exists, use defaults (3 files / 50 lines). If thresholds not met, do nothing.",
+        "loop_limit": 1
+      }
+    ]
+  }
+}

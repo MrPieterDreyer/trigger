@@ -1,6 +1,6 @@
 ---
-description: "Trigger Model Tiering — enforces cost-optimized model selection when spawning team role sub-agents."
-alwaysApply: true
+description: "Trigger Model Tiering — enforces cost-optimized model selection when spawning team role sub-agents. Read when executing execute-task or plan-phase skills."
+alwaysApply: false
 ---
 
 # Trigger Model Tiering
@@ -87,18 +87,24 @@ For roles with `enabled: "auto"`, determine whether to activate by:
 
 The Code Reviewer is always activated. All other reviewers follow the activation logic above.
 
-## Sequential Review Order
+## Parallel Review Batch
 
-Reviews run sequentially, not in parallel:
+By default (`parallelism.reviews: true` in `trigger.json`), all activated reviewers run **concurrently** in a single `Task()` batch:
 
-1. Code Reviewer (always first)
-2. Security Reviewer (if activated)
-3. Performance Reviewer (if activated)
-4. Accessibility Reviewer (if activated)
-5. Database Reviewer (if activated)
-6. DevOps Reviewer (if activated)
+| Slot | Reviewer | Condition |
+|---|---|---|
+| Always | Code Reviewer | Always activated |
+| Conditional | Security Reviewer | If activated by rules |
+| Conditional | Performance Reviewer | If activated by rules |
+| Conditional | Accessibility Reviewer | If activated by rules |
+| Conditional | Database Reviewer | If activated by rules |
+| Conditional | DevOps Reviewer | If activated by rules |
 
-If any reviewer returns REQUEST CHANGES, stop the remaining reviews. The Builder fixes issues first, then the review sequence restarts from the beginning.
+Each reviewer writes to its own `reviews/<role>-review.md` file. The orchestrator merges all verdicts after every reviewer completes.
+
+If **any** reviewer returns REQUEST CHANGES, the Builder receives a **consolidated** list of ALL findings from every reviewer, fixes them in one pass, and then the full review batch runs again. Cap retry cycles at `escalation.max_review_cycles`.
+
+To disable parallel reviews, set `parallelism.reviews: false` in `trigger.json` — reviews will then run sequentially in the order listed above.
 
 ## Anti-AI-Slop Pass
 

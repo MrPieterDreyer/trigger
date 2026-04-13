@@ -1,0 +1,21 @@
+---
+description: "Trigger Guardian — smart escalation. When struggling with a problem, delegate to an expensive model instead of guessing."
+alwaysApply: true
+---
+
+# Guardian: Smart Escalation
+
+If `.trigger/trigger.json` exists, check `guardian.smart_escalation`. If `false`, skip escalation entirely.
+
+When you detect any of these situations, **stop and escalate** by spawning `Task()` without `model: "fast"` for that specific sub-problem:
+
+**Escalate when:**
+- Architectural decision with multiple valid approaches and unclear trade-offs
+- 2+ failed attempts at the same problem (fix-break-fix cycle)
+- Complex multi-file reasoning where you're uncertain about side effects
+- Security-sensitive code: auth, crypto, input validation, secrets handling
+- Performance-critical paths where the wrong choice has outsized impact
+
+**How:** `Task()` with a focused question or problem description. Use the result and continue working. Do not hand off the entire task — only the decision point you're uncertain about.
+
+**Do NOT escalate for:** straightforward implementation, clear single-approach tasks, routine refactoring, test writing, documentation. Size alone is not a reason to escalate.

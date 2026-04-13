@@ -1,6 +1,6 @@
 ---
 name: init-project
-description: Initialize a new Trigger-managed project with auto-detected configuration, team defaults, and .trigger directory structure.
+description: Initialize a new Trigger-managed project with auto-detected configuration, team defaults, planning documents, and .trigger directory structure.
 ---
 
 # Init project
@@ -18,6 +18,7 @@ Use when the user says **trigger new project**, **start a new project**, or **in
 3. **Ask the user** (required fields first; never assume answers):
    - Project name (required)
    - Brief description (optional)
+   - What is this project? Goals, target users, key capabilities (for PROJECT.md)
    - Trust level: `supervised` (pause at every gate), `balanced` (plan approval + sign-off), `autonomous` (sign-off only). Default: `balanced`.
    - Git branching: `none`, `per_phase`, or `per_task`. Default: `none`.
 
@@ -29,9 +30,39 @@ Use when the user says **trigger new project**, **start a new project**, or **in
 
    Omit `--description` if the user skipped it. If `trigger init` supports a branching flag, pass the user's choice; otherwise set branching in `trigger.json` after init.
 
-5. **Present generated config** — Summarize detected project type, verification commands, and team configuration from the created files. Ask whether they want changes.
+5. **Generate planning documents** — Write the following markdown files into `.trigger/`:
 
-6. **Create first milestone** — Ask for a milestone name (e.g. MVP, v1.0) and optional description. Choose a stable `<id>` (slug from the name unless the user specifies). Run:
+   ### PROJECT.md
+   Write `.trigger/PROJECT.md` with:
+   - **Project name** and description
+   - **Goals** — what the project aims to achieve (from user's answers)
+   - **Tech stack** — detected project type, languages, frameworks
+   - **Team configuration** — trust level, active reviewers, model tiering summary
+   - **Key decisions** — any architectural choices discussed during init
+
+   ### REQUIREMENTS.md
+   Write `.trigger/REQUIREMENTS.md` with:
+   - **Overview** — high-level requirements from the user's description
+   - **Functional requirements** — leave as placeholder sections for the user to fill or for plan-phase to populate
+   - **Non-functional requirements** — performance, security, accessibility expectations if discussed
+   - **Constraints** — known limitations, dependencies, deadlines if mentioned
+
+   ### STATE.md
+   Write `.trigger/STATE.md` with:
+   - **Current status:** Initialized — no milestones planned yet
+   - **Active milestone:** None
+   - **Active phase:** None
+   - **Active task:** None
+   - **Last updated:** timestamp
+
+   ### IMPROVEMENT-BACKLOG.md
+   Write `.trigger/IMPROVEMENT-BACKLOG.md` with:
+   - Header explaining this is a living document for improvement ideas, tech debt, and future considerations
+   - Empty sections: **Ideas**, **Tech Debt**, **Future Phases**
+
+6. **Present generated config** — Summarize detected project type, verification commands, team configuration, and the planning documents created. Ask whether they want changes.
+
+7. **Create first milestone** — Ask for a milestone name (e.g. MVP, v1.0) and optional description. Choose a stable `<id>` (slug from the name unless the user specifies). Run:
 
    ```bash
    node <TRIGGER_CLI>/dist/bin/trigger.js milestone create <id> "<name>" --description "<desc>"
@@ -39,10 +70,18 @@ Use when the user says **trigger new project**, **start a new project**, or **in
 
    Omit `--description` if none was given.
 
-7. **Suggest next step** — Tell the user: **Project initialized. Say 'trigger plan phase 1' to start planning your first phase.**
+8. **Generate ROADMAP.md** — Write `.trigger/milestones/<id>/ROADMAP.md` with:
+   - **Milestone name** and description
+   - **Phases** — empty for now; will be populated as phases are planned
+   - **Status** — "Milestone created, no phases planned yet"
+
+   The `roadmapPath()` helper in the CLI paths module returns the correct location.
+
+9. **Suggest next step** — Tell the user: **Project initialized. Say 'trigger plan phase 1' to start planning your first phase.**
 
 ## Important notes
 
 - **No guessing:** If any answer is missing, ask before running `init`.
 - **Unknown type:** If detection yields `unknown`, ask for build, test, and lint commands and update `trigger.json` accordingly.
 - **Health check:** After initialization, run `trigger validate` and report the result.
+- **Document quality:** PROJECT.md and REQUIREMENTS.md should reflect what the user actually said, not generic boilerplate. If the user gave minimal info, keep the documents short and honest rather than padding with assumptions.

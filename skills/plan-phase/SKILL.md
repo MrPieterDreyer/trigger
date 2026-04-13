@@ -1,48 +1,52 @@
 ---
 name: plan-phase
-description: Create a detailed implementation plan for a phase — research, task breakdown, plan review, and user approval before building begins.
+description: Plan a phase — research, task breakdown with parallel grouping, review, docs update, user approval. Read trigger-model-tiering.mdc for agent config.
 ---
 
 # Plan phase
 
-Use when the user says **trigger plan phase N**, **plan the next phase**, or equivalent.
-
 ## Step 1 — Context
 
-1. Read `.trigger/` `state.json` for the active milestone.
-2. Read `milestone.json` for the phase list. If phase **N** is missing, stop: tell the user to add the phase first.
-3. Read `trigger.json` for team / trust config.
-4. In the phase directory, read any existing context (requirements, user stories, notes).
+1. `trigger summary` — active milestone, phase.
+2. Read `milestone.json` for phase list. Phase N missing → stop.
+3. Read `trigger.json` for team/trust/parallelism.
+4. Read `PROJECT.md` and `REQUIREMENTS.md` for project context.
+5. Read any existing phase-level context (requirements, notes).
 
 ## Step 2 — Research (optional)
 
-1. If the phase needs unfamiliar tech or major architectural choices, **ask**: research pass first, or skip to planning?
-2. If research: `Task(subagent_type=repo-research-analyst, model=expensive)` — investigator writes `RESEARCH.md` in that phase directory.
+If unfamiliar tech or architectural choices needed, ask user. If yes: `Task(subagent_type=repo-research-analyst)` → writes `RESEARCH.md` in phase dir.
 
 ## Step 3 — Planning
 
-1. `Task(subagent_type=architecture-strategist, model=expensive)` — **Planner** produces:
-   - `phase.json` with an **ordered** task list.
-   - Per task: `task.json` (acceptance criteria, domains, touched files) and `PLAN.md` (step-by-step implementation instructions).
-2. Plans must be concrete enough for a **fast-model Builder** to execute without guessing.
+Spawn Planner `Task(subagent_type=architecture-strategist)`. Produces:
+- `phase.json` with ordered task list.
+- Per task: `task.json` (criteria, domains) + `PLAN.md` (concrete steps for a fast-model Builder).
+
+**Task ID convention:** Task IDs must follow `p{N}-t{M}` — e.g. tasks for phase `p1` are `p1-t1`, `p1-t2`, `p1-t3`. This mirrors the phase naming convention and makes each task's parent phase self-evident.
+
+**Parallel groups:** Planner assigns `parallel_group` per task. Same group = no shared file writes, no data dependency. When in doubt, keep sequential.
+
+**Batch sign-off:** If 3+ parallel tasks, recommend `batch_signoff: true` on the phase.
 
 ## Step 4 — Plan review (Gate G1)
 
-1. `Task(subagent_type=correctness-reviewer, model=expensive)` — checks completeness, feasibility, testability, and task ordering.
-2. **REQUEST CHANGES** → Planner revises → re-review (**max 2** revision cycles).
-3. **APPROVE** → set phase status to **`planned`** in `phase.json` (or the project’s canonical status field).
+`Task(subagent_type=correctness-reviewer)` — checks completeness, feasibility, parallel group correctness.
+- Request changes → revise → re-review (max 2 cycles).
+- Approve → phase status `planned`.
 
-## Step 5 — User approval
+## Step 5 — Update documents
 
-1. Present: phase summary, task list with short descriptions, domains, and estimated complexity.
-2. **Wait** for the user: approve, request edits, or reorder tasks; apply changes before final approval.
-3. After approval: update `state.json` **`active_phase`** to **N**; suggest **trigger execute phase N**.
+- **ROADMAP.md** — Add phase entry with tasks, parallel groups, status `planned`.
+- **REQUIREMENTS.md** — Append phase requirements from acceptance criteria.
+- **STATE.md** — Set active phase, list planned tasks, update timestamp.
 
-## Cursor / no-`Task()` note
+## Step 6 — User approval
 
-If the host cannot spawn `Task()`, read the matching agent definition and **assume that role** to produce the same artifacts and gates.
+Present: summary, tasks, domains, parallel groups, complexity. Wait for user. After approval: set `active_phase` → suggest `trigger execute phase N`.
 
-## Error handling
+## Notes
 
-- Missing milestone or unreadable paths: stop and say what is missing.
-- Stuck after two review rounds: surface open issues and ask the user how to proceed.
+- If `Task()` unavailable, read agent def and assume that role.
+- Missing milestone → stop and report.
+- Stuck after 2 review rounds → surface issues, ask user.
