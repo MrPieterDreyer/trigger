@@ -1,0 +1,115 @@
+---
+description: "Trigger Model Tiering — enforces cost-optimized model selection when spawning team role sub-agents."
+alwaysApply: true
+---
+
+# Trigger Model Tiering
+
+The core principle of Trigger: **expensive models plan and review, fast models build.** This rule ensures the right model is used for each team role.
+
+## Model Assignments
+
+When spawning sub-agents via `Task()` for Trigger team roles, use these model settings:
+
+### Planning Tier (expensive — omit model parameter to use session default)
+
+| Role | `subagent_type` | `model` parameter |
+|---|---|---|
+| Researcher | `repo-research-analyst` | *(omit — uses session default)* |
+| Planner | `architecture-strategist` | *(omit)* |
+| Plan Reviewer | `correctness-reviewer` | *(omit)* |
+
+### Building Tier (fast — explicitly set model: "fast")
+
+| Role | `subagent_type` | `model` parameter |
+|---|---|---|
+| Builder | `fullstack-developer` | `model: "fast"` |
+
+For stack-specific projects, the Builder subagent_type can be adjusted:
+- React/Next.js → `react-specialist` or `nextjs-developer`
+- Python → `python-pro`
+- .NET → `csharp-developer`
+- Go → `golang-pro`
+- Rust → `rust-engineer`
+
+### Review Tier (expensive — omit model parameter)
+
+| Role | `subagent_type` | `model` parameter |
+|---|---|---|
+| Code Reviewer | `code-reviewer` | *(omit)* |
+| Security Reviewer | `security-reviewer` | *(omit)* |
+| Performance Reviewer | `performance-reviewer` | *(omit)* |
+| Accessibility Reviewer | `accessibility-tester` | *(omit)* |
+| Database Reviewer | `data-migrations-reviewer` | *(omit)* |
+| DevOps Reviewer | `devops-engineer` | *(omit)* |
+
+### Post-Review Tier (fast)
+
+| Role | `subagent_type` | `model` parameter |
+|---|---|---|
+| Documentation Writer | `api-documenter` | `model: "fast"` |
+| QA Verifier | `qa-expert` | *(omit — judgment needed)* |
+
+## Reading Project Overrides
+
+Before spawning any team role, check `.planning/trigger.json` for per-project overrides:
+
+```json
+{
+  "team": {
+    "builder": { "model": "fast", "enabled": true },
+    "security_reviewer": { "model": "expensive", "enabled": "auto" }
+  }
+}
+```
+
+- If `model` is `"fast"` → pass `model: "fast"` to `Task()`
+- If `model` is `"expensive"` → omit `model` parameter (uses session default)
+- If `enabled` is `false` → skip this role entirely
+- If `enabled` is `"auto"` → check activation rules (see below)
+
+Also check for phase-level overrides in the active phase's `phase.json` under `team_overrides`.
+
+## Role Activation Logic
+
+For roles with `enabled: "auto"`, determine whether to activate by:
+
+1. **Check plan metadata** — if the task's `domains` array includes a relevant domain (e.g., "security", "database"), activate the corresponding reviewer
+2. **Check file paths** — match changed files against activation rule globs in `trigger.json`:
+   ```json
+   {
+     "activation_rules": {
+       "security_reviewer": { "globs": ["**/auth/**", "**/api/**"] }
+     }
+   }
+   ```
+3. **Force overrides** — if `always: true` is set on a role, always activate regardless of other conditions
+
+The Code Reviewer is always activated. All other reviewers follow the activation logic above.
+
+## Sequential Review Order
+
+Reviews run sequentially, not in parallel:
+
+1. Code Reviewer (always first)
+2. Security Reviewer (if activated)
+3. Performance Reviewer (if activated)
+4. Accessibility Reviewer (if activated)
+5. Database Reviewer (if activated)
+6. DevOps Reviewer (if activated)
+
+If any reviewer returns REQUEST CHANGES, stop the remaining reviews. The Builder fixes issues first, then the review sequence restarts from the beginning.
+
+## Anti-AI-Slop Pass
+
+After the Builder completes, run a lightweight quality pass:
+- For code: apply `deslop` patterns (remove AI-generated code style artifacts)
+- For documentation: apply `humanizer` patterns (remove AI writing tells)
+
+This is a fast-model pass that runs automatically as part of the Builder's work, not a separate team role.
+
+## Escalation Model Override
+
+When the escalation chain triggers (Builder fails after max retries):
+1. Re-dispatch the same task with the model parameter **omitted** (uses expensive session default)
+2. This is a one-time escalation — if the expensive model also fails, escalate to the user

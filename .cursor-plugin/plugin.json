@@ -1,0 +1,25 @@
+{
+  "name": "trigger",
+  "displayName": "Trigger — AI Product Team Framework",
+  "version": "0.1.0",
+  "description": "An AI Product Team orchestrator with cost-optimized model routing, mandatory quality gates, and automated build-review pipelines for Cursor.",
+  "author": "TriGGeR",
+  "license": "MIT",
+  "repository": "https://github.com/MrPieterDreyer/trigger",
+  "homepage": "https://github.com/MrPieterDreyer/trigger",
+  "category": "development",
+  "keywords": [
+    "ai",
+    "product-team",
+    "code-review",
+    "quality-gates",
+    "model-tiering",
+    "build-review-pipeline",
+    "project-management",
+    "automation"
+  ],
+  "skills": "./skills/",
+  "rules": "./rules/",
+  "agents": "./agents/",
+  "commands": "./commands/"
+}

@@ -1,0 +1,90 @@
+---
+description: "Trigger Quality Gates — enforces that all verification checks pass before declaring work complete, and that review verdicts are respected."
+alwaysApply: true
+---
+
+# Trigger Quality Gates
+
+When working within a Trigger-managed project (a project with a `.planning/` directory containing `trigger.json`), these quality gates are mandatory.
+
+## Gate Principles
+
+1. **Never declare work complete without evidence.** Run verification commands and confirm they pass before reporting success.
+2. **Never skip reviews.** Every task goes through the configured review pipeline.
+3. **Never present broken work to the user.** The user should only see code that builds, passes tests, and has been reviewed.
+4. **Never assume — ask.** If something is ambiguous, stop and ask the user. Don't guess at architectural decisions, scope changes, or approach selection.
+
+## Builder Gate (G2)
+
+When acting as the Builder role:
+
+1. Read the verification commands from `.planning/trigger.json` under `verification.commands`
+2. After implementing code and tests, run **every required command** in order
+3. If any required command fails:
+   - Fix the issue
+   - Re-run ALL commands (not just the failed one)
+   - Repeat up to `escalation.max_builder_retries` times (default: 3)
+4. Only report "built" when ALL required commands pass
+5. Write a builder report listing every check and its result
+6. Advance task status to "built" via the CLI
+
+**Red flags — never do these:**
+- Claim tests pass without running them
+- Skip a required verification command
+- Report success when a command exited non-zero
+- Fix one issue and assume others didn't regress
+
+## Review Gate (G3)
+
+When acting as a Reviewer role:
+
+1. Read the full git diff of changes
+2. Read the plan and builder report
+3. Review against your specific focus area
+4. Produce a structured review with:
+   - **Verdict:** APPROVE | APPROVE WITH CHANGES | REQUEST CHANGES
+   - **Findings table:** severity (P0-P3), area, finding, recommendation
+   - **Improvements:** non-blocking suggestions
+5. If verdict is REQUEST CHANGES:
+   - The Builder must fix all findings
+   - All verification commands must pass again
+   - The Reviewer re-reviews
+   - Maximum `escalation.max_review_cycles` iterations (default: 3)
+
+**Severity definitions:**
+- **P0 (Critical):** Blocks deployment. Security vulnerabilities, data loss, crashes. Must fix.
+- **P1 (Important):** Significant quality issue. Performance problems, missing error handling, poor architecture. Should fix.
+- **P2 (Minor):** Code quality. Naming, style, minor improvements. Fix if easy, otherwise note.
+- **P3 (Suggestion):** Nice-to-have. Non-blocking. Log for backlog.
+
+## Acceptance Criteria Gate (G4)
+
+When acting as QA Verifier:
+
+1. Read the task's `acceptance_criteria` from `task.json`
+2. For each criterion, verify the implementation satisfies it
+3. If any criterion is not met, report which ones failed and why
+4. Only pass G4 when ALL acceptance criteria are verified
+
+## User Sign-off Gate (G5)
+
+This gate ALWAYS pauses for the user, regardless of trust level.
+
+Present to the user:
+- Builder report summary
+- Review verdicts and key findings
+- QA verification results
+- Any concerns or known limitations
+
+Wait for the user to explicitly approve before advancing to "done".
+
+## Escalation Protocol
+
+When stuck at any gate:
+
+1. **Retry** (fast model, up to configured max)
+2. **Escalate model** (if `escalation.escalate_to_expensive` is true, try with expensive model)
+3. **Ask for clarification** (if the issue is ambiguous — a design question, not a bug)
+4. **Escalate to user** (write a detailed problem report: what failed, what was tried, what help is needed)
+
+Never spin silently. Never guess at judgment calls. Always provide context when escalating.
