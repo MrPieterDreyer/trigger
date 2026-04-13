@@ -2,7 +2,7 @@
 import { Command } from "commander";
 import { initProject } from "../src/commands/init.js";
 import { getState, updateState } from "../src/commands/state.js";
-import { getConfig } from "../src/commands/config.js";
+import { getConfig, upgradeConfig } from "../src/commands/config.js";
 import { createMilestone, listMilestones, getMilestoneStatus } from "../src/commands/milestone.js";
 import { createPhase, listPhases } from "../src/commands/phase.js";
 import { createTask, advanceTask, getTaskStatus } from "../src/commands/task.js";
@@ -76,6 +76,28 @@ configCmd
     try {
         const config = await getConfig(process.cwd());
         console.log(JSON.stringify(config, null, 2));
+    }
+    catch (err) {
+        console.error(`Error: ${err.message}`);
+        process.exit(1);
+    }
+});
+configCmd
+    .command("upgrade")
+    .description("Add missing config sections with defaults (safe for existing projects)")
+    .action(async () => {
+    try {
+        const result = await upgradeConfig(process.cwd());
+        if (result.added_sections.length === 0) {
+            console.log(JSON.stringify({ status: "up_to_date", message: "Config already has all sections" }));
+        }
+        else {
+            console.log(JSON.stringify({
+                status: "upgraded",
+                added_sections: result.added_sections,
+                config: result.config,
+            }, null, 2));
+        }
     }
     catch (err) {
         console.error(`Error: ${err.message}`);
