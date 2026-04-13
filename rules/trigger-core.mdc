@@ -22,6 +22,7 @@ AI Product Team framework. State lives in `.trigger/`; all state changes go thro
 | "trigger sign off", "approve this", "looks good" | skill: `sign-off` |
 | "trigger resume", "continue work" | skill: `resume` |
 | "trigger pause", "save progress" | skill: `pause` |
+| "trigger settings", "change settings", "update config", "configure trigger" | skill: `settings` |
 | "trigger config", "show settings" | CLI: `config get` |
 | "trigger quick fix", "quick task" | skill: `quick-task` |
 | "trigger review this", "review what I just did" | skill: `auto-review` |
