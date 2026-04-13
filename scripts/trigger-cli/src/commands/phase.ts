@@ -90,3 +90,34 @@ export async function getPhaseStatus(
   const paths = new TriggerPaths(projectRoot);
   return fm.readJson(paths.phasePath(milestoneId, phaseId), PhaseSchema);
 }
+
+export async function advancePhase(
+  projectRoot: string,
+  milestoneId: string,
+  phaseId: string,
+  newStatus: "planned" | "in_progress" | "done",
+): Promise<Phase> {
+  const paths = new TriggerPaths(projectRoot);
+  const phase = await fm.readJson(
+    paths.phasePath(milestoneId, phaseId),
+    PhaseSchema,
+  );
+
+  const validTransitions: Record<string, string[]> = {
+    planned: ["in_progress"],
+    in_progress: ["done"],
+    done: [],
+  };
+
+  if (!validTransitions[phase.status]?.includes(newStatus)) {
+    throw new Error(
+      `Invalid phase transition: ${phase.status} → ${newStatus}. ` +
+      `Valid transitions from "${phase.status}": ${validTransitions[phase.status]?.join(", ") || "none"}`,
+    );
+  }
+
+  phase.status = newStatus;
+  phase.updated_at = new Date().toISOString();
+  await fm.writeJson(paths.phasePath(milestoneId, phaseId), phase);
+  return phase;
+}

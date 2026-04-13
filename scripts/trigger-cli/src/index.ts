@@ -29,3 +29,6 @@ export type { ProjectTypeDefinition } from "./defaults/project-types.js";
 export { DEFAULT_TEAM, DEFAULT_ACTIVATION_RULES, DEFAULT_ESCALATION } from "./defaults/team-defaults.js";
 export { ProjectDetector } from "./lib/detector.js";
 export type { DetectionResult } from "./lib/detector.js";
+
+export { listReviewers } from "./commands/reviewers.js";
+export type { ActivatedReviewer } from "./commands/reviewers.js";

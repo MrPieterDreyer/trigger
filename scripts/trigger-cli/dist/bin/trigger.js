@@ -2,12 +2,13 @@
 import { Command } from "commander";
 import { initProject } from "../src/commands/init.js";
 import { getState, updateState } from "../src/commands/state.js";
-import { getConfig, upgradeConfig } from "../src/commands/config.js";
+import { getConfig, upgradeConfig, updateConfig } from "../src/commands/config.js";
 import { createMilestone, listMilestones, getMilestoneStatus } from "../src/commands/milestone.js";
-import { createPhase, listPhases } from "../src/commands/phase.js";
-import { createTask, advanceTask, getTaskStatus } from "../src/commands/task.js";
+import { createPhase, listPhases, advancePhase } from "../src/commands/phase.js";
+import { createTask, advanceTask, getTaskStatus, listTasks, setTaskFiles } from "../src/commands/task.js";
 import { validateProject } from "../src/commands/validate.js";
 import { getSummary } from "../src/commands/summary.js";
+import { listReviewers } from "../src/commands/reviewers.js";
 const program = new Command();
 program
     .name("trigger")
@@ -60,6 +61,14 @@ stateCmd
             parsed = true;
         else if (value === "false")
             parsed = false;
+        else {
+            try {
+                parsed = JSON.parse(value);
+            }
+            catch {
+                parsed = value;
+            }
+        }
         const state = await updateState(process.cwd(), { [key]: parsed });
         console.log(JSON.stringify(state, null, 2));
     }
@@ -75,6 +84,37 @@ configCmd
     .action(async () => {
     try {
         const config = await getConfig(process.cwd());
+        console.log(JSON.stringify(config, null, 2));
+    }
+    catch (err) {
+        console.error(`Error: ${err.message}`);
+        process.exit(1);
+    }
+});
+configCmd
+    .command("set")
+    .argument("<key>", "Dotted config key (e.g. project.trust_level, team.security_reviewer.enabled)")
+    .argument("<value>", "Value to set (JSON-parsed: strings, numbers, booleans, objects)")
+    .description("Update a config value using dotted key path")
+    .action(async (key, value) => {
+    try {
+        let parsed = value;
+        if (value === "null")
+            parsed = null;
+        else if (value === "true")
+            parsed = true;
+        else if (value === "false")
+            parsed = false;
+        else {
+            try {
+                parsed = JSON.parse(value);
+            }
+            catch {
+                parsed = value;
+            }
+        }
+        const updates = buildNestedObject(key, parsed);
+        const config = await updateConfig(process.cwd(), updates);
         console.log(JSON.stringify(config, null, 2));
     }
     catch (err) {
@@ -190,6 +230,22 @@ phaseCmd
         process.exit(1);
     }
 });
+phaseCmd
+    .command("advance")
+    .argument("<milestoneId>", "Parent milestone ID")
+    .argument("<phaseId>", "Phase ID")
+    .argument("<newStatus>", "New phase status: planned, in_progress, done")
+    .description("Advance a phase to a new status")
+    .action(async (milestoneId, phaseId, newStatus) => {
+    try {
+        const phase = await advancePhase(process.cwd(), milestoneId, phaseId, newStatus);
+        console.log(JSON.stringify(phase, null, 2));
+    }
+    catch (err) {
+        console.error(`Error: ${err.message}`);
+        process.exit(1);
+    }
+});
 // --- Task commands ---
 const taskCmd = program.command("task").description("Manage tasks");
 taskCmd
@@ -250,6 +306,57 @@ taskCmd
         process.exit(1);
     }
 });
+taskCmd
+    .command("list")
+    .argument("<milestoneId>", "Parent milestone ID")
+    .argument("<phaseId>", "Parent phase ID")
+    .description("List all tasks in a phase")
+    .action(async (milestoneId, phaseId) => {
+    try {
+        const tasks = await listTasks(process.cwd(), milestoneId, phaseId);
+        console.log(JSON.stringify(tasks, null, 2));
+    }
+    catch (err) {
+        console.error(`Error: ${err.message}`);
+        process.exit(1);
+    }
+});
+taskCmd
+    .command("set-files")
+    .argument("<milestoneId>", "Parent milestone ID")
+    .argument("<phaseId>", "Parent phase ID")
+    .argument("<taskId>", "Task ID")
+    .argument("<files...>", "Changed file paths")
+    .description("Record which files were changed by a task")
+    .action(async (milestoneId, phaseId, taskId, files) => {
+    try {
+        const task = await setTaskFiles(process.cwd(), milestoneId, phaseId, taskId, files);
+        console.log(JSON.stringify({ id: task.id, changed_files: task.changed_files }, null, 2));
+    }
+    catch (err) {
+        console.error(`Error: ${err.message}`);
+        process.exit(1);
+    }
+});
+// --- Reviewers command ---
+const reviewersCmd = program.command("reviewers").description("Reviewer activation");
+reviewersCmd
+    .command("list")
+    .argument("<milestoneId>", "Parent milestone ID")
+    .argument("<phaseId>", "Parent phase ID")
+    .argument("<taskId>", "Task ID")
+    .option("--files <files...>", "Changed file paths to check against activation rules")
+    .description("List activated reviewers for a task based on config, domains, and file globs")
+    .action(async (milestoneId, phaseId, taskId, opts) => {
+    try {
+        const reviewers = await listReviewers(process.cwd(), milestoneId, phaseId, taskId, opts.files);
+        console.log(JSON.stringify(reviewers, null, 2));
+    }
+    catch (err) {
+        console.error(`Error: ${err.message}`);
+        process.exit(1);
+    }
+});
 // --- Summary command ---
 program
     .command("summary")
@@ -281,5 +388,16 @@ program
         process.exit(1);
     }
 });
+function buildNestedObject(dottedKey, value) {
+    const keys = dottedKey.split(".");
+    const result = {};
+    let current = result;
+    for (let i = 0; i < keys.length - 1; i++) {
+        current[keys[i]] = {};
+        current = current[keys[i]];
+    }
+    current[keys[keys.length - 1]] = value;
+    return result;
+}
 program.parse();
 //# sourceMappingURL=trigger.js.map

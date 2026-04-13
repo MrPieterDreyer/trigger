@@ -9,6 +9,7 @@ declare const TaskStatus: z.ZodEnum<{
     done: "done";
     planned: "planned";
     built: "built";
+    qa_passed: "qa_passed";
 }>;
 export declare const TaskSchema: z.ZodObject<{
     id: z.ZodString;
@@ -24,10 +25,12 @@ export declare const TaskSchema: z.ZodObject<{
         done: "done";
         planned: "planned";
         built: "built";
+        qa_passed: "qa_passed";
     }>>;
     acceptance_criteria: z.ZodDefault<z.ZodArray<z.ZodString>>;
     test_requirements: z.ZodOptional<z.ZodArray<z.ZodString>>;
     domains: z.ZodDefault<z.ZodArray<z.ZodString>>;
+    changed_files: z.ZodDefault<z.ZodArray<z.ZodString>>;
     parallel_group: z.ZodOptional<z.ZodString>;
     created_at: z.ZodString;
     updated_at: z.ZodString;

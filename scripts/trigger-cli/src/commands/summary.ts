@@ -24,6 +24,8 @@ export interface SummaryResult {
   task: { id: string; name: string; status: string } | null;
   pipeline: string;
   verification_commands: number;
+  recent_verdicts: Array<{ reviewer: string; verdict: string }>;
+  artifacts: { builder_report: boolean; review_summary: boolean; qa_verification: boolean };
 }
 
 export async function getSummary(projectRoot: string): Promise<SummaryResult> {
@@ -52,6 +54,8 @@ export async function getSummary(projectRoot: string): Promise<SummaryResult> {
     task: null,
     pipeline: state.pipeline_stage,
     verification_commands: config.verification.commands.length,
+    recent_verdicts: [],
+    artifacts: { builder_report: false, review_summary: false, qa_verification: false },
   };
 
   if (state.active_milestone) {
@@ -116,6 +120,21 @@ export async function getSummary(projectRoot: string): Promise<SummaryResult> {
         name: t.name,
         status: t.status,
       };
+
+      result.recent_verdicts = t.review_verdicts.map((v) => ({
+        reviewer: v.reviewer,
+        verdict: v.verdict,
+      }));
+
+      result.artifacts.builder_report = await fm.exists(
+        paths.builderReportPath(state.active_milestone, state.active_phase, state.active_task),
+      );
+      result.artifacts.review_summary = await fm.exists(
+        paths.reviewSummaryPath(state.active_milestone, state.active_phase, state.active_task),
+      );
+
+      const qaPath = paths.reviewsDir(state.active_milestone, state.active_phase, state.active_task) + "/qa-verification.md";
+      result.artifacts.qa_verification = await fm.exists(qaPath);
     } catch { /* task unreadable */ }
   }
 

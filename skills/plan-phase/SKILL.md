@@ -23,7 +23,7 @@ Spawn Planner `Task(subagent_type=architecture-strategist)`. Produces:
 - `phase.json` with ordered task list.
 - Per task: `task.json` (criteria, domains) + `PLAN.md` (concrete steps for a fast-model Builder).
 
-**Task ID convention:** Task IDs must follow `p{N}-t{M}` — e.g. tasks for phase `p1` are `p1-t1`, `p1-t2`, `p1-t3`. This mirrors the phase naming convention and makes each task's parent phase self-evident.
+**Task ID convention:** Task IDs should be descriptive kebab-case slugs (e.g., `auth-foundation`, `api-client`, `cicd-pipeline`). Keep them short but meaningful — the task name provides the full description.
 
 **Parallel groups:** Planner assigns `parallel_group` per task. Same group = no shared file writes, no data dependency. When in doubt, keep sequential.
 

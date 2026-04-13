@@ -34,11 +34,11 @@ Per group:
 
 ### 2c. Batch sign-off
 
-If `batch_signoff: true`: defer Gate 5. Tasks stop at `review_passed`. After all reach it, present one phase-level rollup. User approves → advance all to `done`. Changes → rework specific tasks only.
+If `batch_signoff: true`: defer Gate 5. Tasks stop at `qa_passed` (after reviews AND QA verification pass). After all reach `qa_passed`, present one phase-level rollup. User approves → advance all through `signoff` → `done`. Changes → rework specific tasks only.
 
 ## Step 3 — Phase completion
 
-1. Set phase status `done`. `trigger state set active_task null`.
+1. `trigger phase advance <m> <p> done`. `trigger state set active_task null`.
 2. Update `ROADMAP.md` (mark phase done) and `STATE.md` (phase complete, next phase).
 3. Report: N/N tasks, review rollup, parallel groups used.
 4. Suggest next: `trigger plan phase N+1` or `trigger status`.

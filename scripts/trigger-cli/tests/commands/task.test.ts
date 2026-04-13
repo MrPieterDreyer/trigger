@@ -2,10 +2,11 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import fs from "node:fs/promises";
 import path from "node:path";
 import os from "node:os";
-import { createTask, advanceTask, getTaskStatus } from "../../src/commands/task.js";
+import { createTask, advanceTask, getTaskStatus, listTasks, setTaskFiles } from "../../src/commands/task.js";
 import { createPhase, getPhaseStatus } from "../../src/commands/phase.js";
 import { createMilestone } from "../../src/commands/milestone.js";
 import { initProject } from "../../src/commands/init.js";
+import { getState } from "../../src/commands/state.js";
 import { TaskSchema } from "../../src/schemas/task.js";
 
 describe("task commands", () => {
@@ -155,6 +156,135 @@ describe("task commands", () => {
       await expect(
         getTaskStatus(tmpDir, "v1", "p1", "nonexistent"),
       ).rejects.toThrow();
+    });
+  });
+
+  describe("createTask — duplicate prevention", () => {
+    it("throws when creating a task with an existing ID", async () => {
+      await createTask(tmpDir, "v1", "p1", { id: "t1", name: "Task 1" });
+
+      await expect(
+        createTask(tmpDir, "v1", "p1", { id: "t1", name: "Duplicate" }),
+      ).rejects.toThrow(/already exists/i);
+    });
+
+    it("allows different IDs under the same phase", async () => {
+      await createTask(tmpDir, "v1", "p1", { id: "t1", name: "Task 1" });
+      const t2 = await createTask(tmpDir, "v1", "p1", { id: "t2", name: "Task 2" });
+
+      expect(t2.id).toBe("t2");
+    });
+  });
+
+  describe("listTasks", () => {
+    it("returns all tasks in a phase", async () => {
+      await createTask(tmpDir, "v1", "p1", { id: "t1", name: "Task 1" });
+      await createTask(tmpDir, "v1", "p1", { id: "t2", name: "Task 2" });
+
+      const tasks = await listTasks(tmpDir, "v1", "p1");
+
+      expect(tasks).toHaveLength(2);
+      expect(tasks[0].id).toBe("t1");
+      expect(tasks[1].id).toBe("t2");
+    });
+
+    it("includes status and parallel_group", async () => {
+      await createTask(tmpDir, "v1", "p1", {
+        id: "t1",
+        name: "Task 1",
+        parallel_group: "group-a",
+      });
+
+      const tasks = await listTasks(tmpDir, "v1", "p1");
+
+      expect(tasks[0].status).toBe("planned");
+      expect(tasks[0].parallel_group).toBe("group-a");
+    });
+
+    it("returns empty array for phase with no tasks", async () => {
+      const tasks = await listTasks(tmpDir, "v1", "p1");
+      expect(tasks).toEqual([]);
+    });
+  });
+
+  describe("setTaskFiles", () => {
+    it("records changed files on a task", async () => {
+      await createTask(tmpDir, "v1", "p1", { id: "t1", name: "Task 1" });
+
+      const task = await setTaskFiles(tmpDir, "v1", "p1", "t1", [
+        "src/auth/login.ts",
+        "src/auth/session.ts",
+      ]);
+
+      expect(task.changed_files).toEqual([
+        "src/auth/login.ts",
+        "src/auth/session.ts",
+      ]);
+    });
+
+    it("overwrites previous changed files", async () => {
+      await createTask(tmpDir, "v1", "p1", { id: "t1", name: "Task 1" });
+      await setTaskFiles(tmpDir, "v1", "p1", "t1", ["old.ts"]);
+
+      const task = await setTaskFiles(tmpDir, "v1", "p1", "t1", ["new.ts"]);
+
+      expect(task.changed_files).toEqual(["new.ts"]);
+    });
+
+    it("persists to disk", async () => {
+      await createTask(tmpDir, "v1", "p1", { id: "t1", name: "Task 1" });
+      await setTaskFiles(tmpDir, "v1", "p1", "t1", ["file.ts"]);
+
+      const task = await getTaskStatus(tmpDir, "v1", "p1", "t1");
+      expect(task.changed_files).toEqual(["file.ts"]);
+    });
+  });
+
+  describe("advanceTask — pipeline_stage sync", () => {
+    it("syncs pipeline_stage to building when task advances to building", async () => {
+      await createTask(tmpDir, "v1", "p1", { id: "t1", name: "Task 1" });
+
+      await advanceTask(tmpDir, "v1", "p1", "t1", "building");
+
+      const state = await getState(tmpDir);
+      expect(state.pipeline_stage).toBe("building");
+    });
+
+    it("syncs pipeline_stage to reviewing when task advances to built", async () => {
+      await createTask(tmpDir, "v1", "p1", { id: "t1", name: "Task 1" });
+      await advanceTask(tmpDir, "v1", "p1", "t1", "building");
+
+      await advanceTask(tmpDir, "v1", "p1", "t1", "built");
+
+      const state = await getState(tmpDir);
+      expect(state.pipeline_stage).toBe("reviewing");
+    });
+
+    it("syncs pipeline_stage to qa_verification when review passes", async () => {
+      await createTask(tmpDir, "v1", "p1", { id: "t1", name: "Task 1" });
+      await advanceTask(tmpDir, "v1", "p1", "t1", "building");
+      await advanceTask(tmpDir, "v1", "p1", "t1", "built");
+      await advanceTask(tmpDir, "v1", "p1", "t1", "reviewing");
+
+      await advanceTask(tmpDir, "v1", "p1", "t1", "review_passed");
+
+      const state = await getState(tmpDir);
+      expect(state.pipeline_stage).toBe("qa_verification");
+    });
+
+    it("syncs pipeline_stage to done when task completes", async () => {
+      await createTask(tmpDir, "v1", "p1", { id: "t1", name: "Task 1" });
+      await advanceTask(tmpDir, "v1", "p1", "t1", "building");
+      await advanceTask(tmpDir, "v1", "p1", "t1", "built");
+      await advanceTask(tmpDir, "v1", "p1", "t1", "reviewing");
+      await advanceTask(tmpDir, "v1", "p1", "t1", "review_passed");
+      await advanceTask(tmpDir, "v1", "p1", "t1", "qa_passed");
+      await advanceTask(tmpDir, "v1", "p1", "t1", "signoff");
+
+      await advanceTask(tmpDir, "v1", "p1", "t1", "done");
+
+      const state = await getState(tmpDir);
+      expect(state.pipeline_stage).toBe("done");
     });
   });
 });

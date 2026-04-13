@@ -5,9 +5,10 @@ const TRANSITIONS = {
     build_failed: ["building"],
     reviewing: ["review_passed", "changes_requested"],
     changes_requested: ["building"],
-    review_passed: ["signoff"],
+    review_passed: ["qa_passed"],
+    qa_passed: ["signoff"],
     signoff: ["done", "changes_requested"],
-    done: [],
+    done: ["changes_requested"],
 };
 export class StateMachine {
     canTransition(from, to) {

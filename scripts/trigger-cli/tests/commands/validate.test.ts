@@ -6,8 +6,10 @@ import { validateProject, type ValidationResult } from "../../src/commands/valid
 import { initProject } from "../../src/commands/init.js";
 import { createMilestone } from "../../src/commands/milestone.js";
 import { createPhase } from "../../src/commands/phase.js";
-import { createTask } from "../../src/commands/task.js";
+import { createTask, advanceTask } from "../../src/commands/task.js";
 import { updateState } from "../../src/commands/state.js";
+import { FileManager } from "../../src/lib/file-manager.js";
+import { TriggerPaths } from "../../src/lib/paths.js";
 
 describe("validateProject", () => {
   let tmpDir: string;
@@ -107,5 +109,72 @@ describe("validateProject", () => {
     expect(
       result.errors.some((e) => /nonexistent/i.test(e) && /task/i.test(e)),
     ).toBe(true);
+  });
+
+  describe("artifact validation", () => {
+    const fm = new FileManager();
+
+    it("warns when built task is missing BUILDER-REPORT.md", async () => {
+      await initProject(tmpDir, { name: "artifact-test" });
+      await createMilestone(tmpDir, { id: "v1", name: "Version 1.0" });
+      await createPhase(tmpDir, "v1", { id: "p1", name: "Foundation" });
+      await createTask(tmpDir, "v1", "p1", { id: "t1", name: "Task 1" });
+      await advanceTask(tmpDir, "v1", "p1", "t1", "building");
+      await advanceTask(tmpDir, "v1", "p1", "t1", "built");
+
+      const result = await validateProject(tmpDir);
+
+      expect(result.warnings.some((w) => /BUILDER-REPORT\.md/i.test(w))).toBe(true);
+    });
+
+    it("no warning when built task has BUILDER-REPORT.md", async () => {
+      await initProject(tmpDir, { name: "artifact-test" });
+      await createMilestone(tmpDir, { id: "v1", name: "Version 1.0" });
+      await createPhase(tmpDir, "v1", { id: "p1", name: "Foundation" });
+      await createTask(tmpDir, "v1", "p1", { id: "t1", name: "Task 1" });
+      await advanceTask(tmpDir, "v1", "p1", "t1", "building");
+      await advanceTask(tmpDir, "v1", "p1", "t1", "built");
+
+      const paths = new TriggerPaths(tmpDir);
+      await fm.writeMarkdown(
+        paths.builderReportPath("v1", "p1", "t1"),
+        "# Report\nDone.",
+      );
+
+      const result = await validateProject(tmpDir);
+
+      expect(result.warnings.some((w) => /BUILDER-REPORT\.md/i.test(w))).toBe(false);
+    });
+
+    it("warns when review_passed task is missing review-summary.json", async () => {
+      await initProject(tmpDir, { name: "artifact-test" });
+      await createMilestone(tmpDir, { id: "v1", name: "Version 1.0" });
+      await createPhase(tmpDir, "v1", { id: "p1", name: "Foundation" });
+      await createTask(tmpDir, "v1", "p1", { id: "t1", name: "Task 1" });
+      await advanceTask(tmpDir, "v1", "p1", "t1", "building");
+      await advanceTask(tmpDir, "v1", "p1", "t1", "built");
+      await advanceTask(tmpDir, "v1", "p1", "t1", "reviewing");
+      await advanceTask(tmpDir, "v1", "p1", "t1", "review_passed");
+
+      const result = await validateProject(tmpDir);
+
+      expect(result.warnings.some((w) => /review-summary\.json/i.test(w))).toBe(true);
+    });
+
+    it("warns when qa_passed task is missing qa-verification.md", async () => {
+      await initProject(tmpDir, { name: "artifact-test" });
+      await createMilestone(tmpDir, { id: "v1", name: "Version 1.0" });
+      await createPhase(tmpDir, "v1", { id: "p1", name: "Foundation" });
+      await createTask(tmpDir, "v1", "p1", { id: "t1", name: "Task 1" });
+      await advanceTask(tmpDir, "v1", "p1", "t1", "building");
+      await advanceTask(tmpDir, "v1", "p1", "t1", "built");
+      await advanceTask(tmpDir, "v1", "p1", "t1", "reviewing");
+      await advanceTask(tmpDir, "v1", "p1", "t1", "review_passed");
+      await advanceTask(tmpDir, "v1", "p1", "t1", "qa_passed");
+
+      const result = await validateProject(tmpDir);
+
+      expect(result.warnings.some((w) => /qa-verification\.md/i.test(w))).toBe(true);
+    });
   });
 });

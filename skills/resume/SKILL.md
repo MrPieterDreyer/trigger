@@ -14,5 +14,6 @@ When the user says **trigger resume**, **continue work**, or **pick up where I l
 5. If `PAUSE-CONTEXT.md` exists in active task dir, read it for session context.
 6. Summarize: what was in progress, current status, next step.
 7. By status: `planned` → build. `building`/`build_failed` → resume build. `reviewing`/`changes_requested` → continue reviews. `signoff` → present for G5. `done` → next task/phase.
-8. Update `STATE.md` — clear paused status, set active, update timestamp.
-9. Ask: *Continue where you left off, or do something else?*
+8. Clear pause marker: `trigger state set paused_at null`.
+9. Update `STATE.md` — clear paused status, set active, update timestamp.
+10. Ask: *Continue where you left off, or do something else?*

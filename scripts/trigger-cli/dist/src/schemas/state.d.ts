@@ -30,6 +30,7 @@ export declare const StateSchema: z.ZodObject<{
         done: "done";
     }>>;
     last_updated: z.ZodString;
+    paused_at: z.ZodOptional<z.ZodNullable<z.ZodString>>;
     session: z.ZodOptional<z.ZodObject<{
         started_at: z.ZodString;
         trust_level: z.ZodOptional<z.ZodEnum<{

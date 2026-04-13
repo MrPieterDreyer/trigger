@@ -30,6 +30,8 @@ export async function getSummary(projectRoot) {
         task: null,
         pipeline: state.pipeline_stage,
         verification_commands: config.verification.commands.length,
+        recent_verdicts: [],
+        artifacts: { builder_report: false, review_summary: false, qa_verification: false },
     };
     if (state.active_milestone) {
         try {
@@ -82,6 +84,14 @@ export async function getSummary(projectRoot) {
                 name: t.name,
                 status: t.status,
             };
+            result.recent_verdicts = t.review_verdicts.map((v) => ({
+                reviewer: v.reviewer,
+                verdict: v.verdict,
+            }));
+            result.artifacts.builder_report = await fm.exists(paths.builderReportPath(state.active_milestone, state.active_phase, state.active_task));
+            result.artifacts.review_summary = await fm.exists(paths.reviewSummaryPath(state.active_milestone, state.active_phase, state.active_task));
+            const qaPath = paths.reviewsDir(state.active_milestone, state.active_phase, state.active_task) + "/qa-verification.md";
+            result.artifacts.qa_verification = await fm.exists(qaPath);
         }
         catch { /* task unreadable */ }
     }

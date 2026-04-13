@@ -1,4 +1,5 @@
 import fs from "node:fs/promises";
+import path from "node:path";
 import { TriggerPaths } from "../lib/paths.js";
 import { FileManager } from "../lib/file-manager.js";
 import { TriggerConfigSchema } from "../schemas/trigger-config.js";
@@ -105,7 +106,36 @@ export async function validateProject(projectRoot) {
                     if (await fm.exists(taskJsonPath)) {
                         try {
                             const raw = await fs.readFile(taskJsonPath, "utf-8");
-                            TaskSchema.parse(JSON.parse(raw));
+                            const taskData = TaskSchema.parse(JSON.parse(raw));
+                            const STATUS_ORDER = [
+                                "planned", "building", "built", "build_failed", "reviewing",
+                                "changes_requested", "review_passed", "qa_passed", "signoff", "done",
+                            ];
+                            const statusIdx = STATUS_ORDER.indexOf(taskData.status);
+                            const taskDirPath = paths.taskDir(msEntry.name, phaseEntry.name, taskEntry.name);
+                            const reviewsDirPath = paths.reviewsDir(msEntry.name, phaseEntry.name, taskEntry.name);
+                            if (statusIdx >= STATUS_ORDER.indexOf("built") && statusIdx !== STATUS_ORDER.indexOf("build_failed")) {
+                                const reportPath = path.join(taskDirPath, "BUILDER-REPORT.md");
+                                if (!(await fm.exists(reportPath))) {
+                                    warnings.push(`Task "${taskEntry.name}": status is "${taskData.status}" but BUILDER-REPORT.md is missing`);
+                                }
+                            }
+                            if (statusIdx >= STATUS_ORDER.indexOf("review_passed")) {
+                                const summaryPath = path.join(reviewsDirPath, "review-summary.json");
+                                if (!(await fm.exists(summaryPath))) {
+                                    warnings.push(`Task "${taskEntry.name}": status is "${taskData.status}" but reviews/review-summary.json is missing`);
+                                }
+                                const codeReviewPath = path.join(reviewsDirPath, "code-reviewer-review.md");
+                                if (!(await fm.exists(codeReviewPath))) {
+                                    warnings.push(`Task "${taskEntry.name}": status is "${taskData.status}" but reviews/code-reviewer-review.md is missing`);
+                                }
+                            }
+                            if (statusIdx >= STATUS_ORDER.indexOf("qa_passed")) {
+                                const qaPath = path.join(reviewsDirPath, "qa-verification.md");
+                                if (!(await fm.exists(qaPath))) {
+                                    warnings.push(`Task "${taskEntry.name}": status is "${taskData.status}" but reviews/qa-verification.md is missing`);
+                                }
+                            }
                         }
                         catch (err) {
                             errors.push(`Task "${taskEntry.name}" task.json invalid: ${err.message}`);

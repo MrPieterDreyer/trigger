@@ -13,6 +13,7 @@ When working within a Trigger-managed project (a project with a `.trigger/` dire
 2. **Never skip reviews.** Every task goes through the configured review pipeline.
 3. **Never present broken work to the user.** The user should only see code that builds, passes tests, and has been reviewed.
 4. **Never assume — ask.** If something is ambiguous, stop and ask the user. Don't guess at architectural decisions, scope changes, or approach selection.
+5. **Artifact-before-state.** Never advance to the next pipeline state without the required artifact file existing on disk.
 
 ## Builder Gate (G2)
 
@@ -25,16 +26,29 @@ When acting as the Builder role:
    - Re-run ALL commands (not just the failed one)
    - Repeat up to `escalation.max_builder_retries` times (default: 3)
 4. Only report "built" when ALL required commands pass
-5. Write a builder report listing every check and its result
-6. Advance task status to "built" via the CLI
+5. **Required artifact:** Write `BUILDER-REPORT.md` in the task directory listing every check and its result, files changed, risks, and deviations from the plan. This applies whether building via subagent or in-session.
+6. **Do NOT advance to "built" until `BUILDER-REPORT.md` exists.**
 
 **Red flags — never do these:**
 - Claim tests pass without running them
 - Skip a required verification command
 - Report success when a command exited non-zero
 - Fix one issue and assume others didn't regress
+- Advance to "built" without writing `BUILDER-REPORT.md`
 
-## Review Gate (G3)
+## Review Activation Gate (G3a)
+
+Before running any reviews, you MUST determine the full set of activated reviewers:
+
+1. Read `trigger.json` → `team` config and `activation_rules`
+2. For each reviewer:
+   - `enabled: true` → always activate
+   - `enabled: false` → skip
+   - `enabled: "auto"` → match changed files against `activation_rules.<reviewer>.globs` AND check the task's `domains` array. Activate if ANY match.
+3. Log the full activation decision before proceeding (which reviewers, why)
+4. **Do NOT proceed to reviews without documenting this decision.**
+
+## Review Gate (G3b)
 
 When acting as a Reviewer role:
 
@@ -45,7 +59,9 @@ When acting as a Reviewer role:
    - **Verdict:** APPROVE | APPROVE WITH CHANGES | REQUEST CHANGES
    - **Findings table:** severity (P0-P3), area, finding, recommendation
    - **Improvements:** non-blocking suggestions
-5. If verdict is REQUEST CHANGES:
+5. **Required artifact:** Write `reviews/<role>-review.md` for every activated reviewer. This applies whether reviewing via subagent or in-session. Do NOT record a verdict in `task.json` until the review file exists.
+6. **Required artifact:** After ALL reviews complete, write `reviews/review-summary.json` matching the `ReviewSummarySchema`. Do NOT advance past `reviewing` until this file exists.
+7. If verdict is REQUEST CHANGES:
    - The Builder must fix all findings
    - All verification commands must pass again
    - The Reviewer re-reviews
@@ -64,19 +80,49 @@ When acting as QA Verifier:
 1. Read the task's `acceptance_criteria` from `task.json`
 2. For each criterion, verify the implementation satisfies it
 3. If any criterion is not met, report which ones failed and why
-4. Only pass G4 when ALL acceptance criteria are verified
+4. **Required artifact:** Write `reviews/qa-verification.md` with per-criterion pass/fail results
+5. Only advance to `qa_passed` when ALL acceptance criteria are verified AND the artifact file exists
+6. **This gate is mandatory. It MUST run for every task. It cannot be skipped.**
+
+State transition: `review_passed` → `qa_passed` (only after G4 passes).
 
 ## User Sign-off Gate (G5)
 
-This gate ALWAYS pauses for the user, regardless of trust level.
+This gate ALWAYS pauses for the user, regardless of trust level (`supervised`, `balanced`, or `autonomous`).
 
 Present to the user:
-- Builder report summary
-- Review verdicts and key findings
-- QA verification results
+- Builder report summary (from `BUILDER-REPORT.md`)
+- Review verdicts and key findings (from `reviews/review-summary.json`)
+- QA verification results (from `reviews/qa-verification.md`)
 - Any concerns or known limitations
 
-Wait for the user to explicitly approve before advancing to "done".
+Wait for the user to explicitly approve before advancing to "done". Never auto-advance through sign-off.
+
+## Artifact Checklist
+
+Before advancing to each state, verify the corresponding artifacts exist:
+
+| State transition | Required artifact |
+|---|---|
+| → `built` | `BUILDER-REPORT.md` in task dir |
+| → `review_passed` | `reviews/<role>-review.md` for every activated reviewer + `reviews/review-summary.json` |
+| → `qa_passed` | `reviews/qa-verification.md` |
+| → `done` | Explicit user approval at sign-off |
+
+If any artifact is missing, create it before advancing. No exceptions.
+
+## Trust behavior matrix
+
+| Gate | supervised | balanced | autonomous |
+|------|-----------|----------|------------|
+| G2 Builder report | Show report, wait for OK | Show report, auto-proceed | Auto-proceed |
+| G3 Review rollup | Show each review, wait | Show combined rollup, auto-proceed | Auto-proceed |
+| G4 QA verification | Show QA report, wait | Show QA summary, auto-proceed if PASS | Auto-proceed if PASS |
+| G5 User sign-off | **Always wait** | **Always wait** | **Always wait** |
+
+G5 (sign-off) always requires explicit user approval, regardless of trust level.
+
+Exception: If the phase has `batch_signoff: true`, individual task sign-off (G5) is deferred. Tasks stop at `qa_passed`. The execute-phase orchestrator presents a single phase-level sign-off after all tasks reach that state.
 
 ## Escalation Protocol
 

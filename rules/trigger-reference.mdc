@@ -16,30 +16,42 @@ alwaysApply: false
 
 Bundled at `<PLUGIN_ROOT>/scripts/trigger-cli/`. `<PLUGIN_ROOT>` is the directory containing this rule's parent (`rules/`). For local installs: `~/.cursor/plugins/local/trigger/`.
 
+**Invocation:** All skill docs use `trigger <command>` as shorthand. The actual invocation is:
+```
+node <PLUGIN_ROOT>/scripts/trigger-cli/dist/bin/trigger.js <command>
+```
+Resolve `<PLUGIN_ROOT>` from `trigger-core.mdc`. Skills that say `trigger summary` mean the full path above.
+
 **First-time setup:** `npm install --production` inside `<PLUGIN_ROOT>/scripts/trigger-cli/`.
 
 ### Commands
 
 | Command | Description |
 |---|---|
-| `init <name>` | Initialize a project |
+| `init <name>` | Initialize a project (`--trust`, `--description`) |
 | `state get` | Print current state JSON |
-| `state set <key> <value>` | Update a state field |
+| `state set <key> <value>` | Update a state field (JSON-aware: parses numbers, booleans, objects) |
 | `config get` | Print current config JSON |
-| `summary` | Compact dashboard of active milestone/phase/task/settings |
-| `milestone create <id> <name>` | Create a milestone |
+| `config set <key> <value>` | Update config via dotted key path (e.g. `project.trust_level balanced`) |
+| `config upgrade` | Add missing config sections with defaults (safe for existing projects) |
+| `summary` | Compact dashboard: milestone/phase/task/settings/artifacts/verdicts |
+| `milestone create <id> <name>` | Create a milestone (`--description`, `--branching`) |
 | `milestone list` | List all milestones |
 | `milestone status <id>` | Get milestone status |
-| `phase create <milestoneId> <id> <name>` | Create a phase |
-| `phase list <milestoneId>` | List phases under a milestone |
-| `task create <m> <p> <id> <name>` | Create a task (supports `--parallel-group`, `--criteria`, `--domains`). Task IDs must follow `p{N}-t{M}` (e.g. `p1-t1`, `p1-t2`) to match the phase naming convention. |
-| `task advance <m> <p> <t> <status>` | Advance task status |
+| `phase create <m> <id> <name>` | Create a phase (`--domains`) |
+| `phase list <m>` | List phases under a milestone |
+| `phase advance <m> <p> <status>` | Advance phase status (`planned` → `in_progress` → `done`) |
+| `task create <m> <p> <id> <name>` | Create a task (`--parallel-group`, `--criteria`, `--domains`). Use descriptive kebab-case IDs. |
+| `task advance <m> <p> <t> <status>` | Advance task status (validates against state machine) |
 | `task status <m> <p> <t>` | Get task status |
-| `validate` | Validate project integrity |
+| `task list <m> <p>` | List all tasks in a phase with status and parallel group |
+| `task set-files <m> <p> <t> <files...>` | Record changed files on a task (used by reviewer activation) |
+| `reviewers list <m> <p> <t>` | List activated reviewers based on config, domains, and globs (`--files`) |
+| `validate` | Validate project integrity (schema + artifact existence checks) |
 
 ## Team Roles
 
-Each role is an agent file in `agents/`, spawned via `Task()`:
+Each role is an agent file in `agents/`, spawned via `Task()` where available. **In Cursor (or any environment without `Task()` spawning):** read the agent definition and perform that role in-session. All artifact requirements still apply — the same files must be produced regardless of execution mode.
 
 | Role | Agent | Model | Subagent Type |
 |---|---|---|---|
@@ -57,6 +69,57 @@ Each role is an agent file in `agents/`, spawned via `Task()`:
 | QA Verifier | `qa-verifier.md` | fast | `qa-expert` |
 
 For stack-specific projects, Builder subagent_type can be adjusted (e.g. `react-specialist`, `python-pro`, `golang-pro`).
+
+## Task State Machine
+
+Valid states and transitions:
+
+```
+planned → building → built → reviewing → review_passed → qa_passed → signoff → done
+                ↑                  ↑                                      │
+                └── build_failed   └── changes_requested ←────────────────┘
+```
+
+| From | Valid transitions to |
+|---|---|
+| `planned` | `building` |
+| `building` | `built`, `build_failed` |
+| `built` | `reviewing` |
+| `build_failed` | `building` |
+| `reviewing` | `review_passed`, `changes_requested` |
+| `changes_requested` | `building` |
+| `review_passed` | `qa_passed` |
+| `qa_passed` | `signoff` |
+| `signoff` | `done`, `changes_requested` |
+| `done` | `changes_requested` (reopen) |
+
+## Pipeline Stage vs Task Status
+
+`state.json` has a `pipeline_stage` field that reflects the current pipeline step. It is **auto-synced** by `task advance` — you do not need to set it manually. The mapping is:
+
+| Task status | Pipeline stage | Meaning |
+|---|---|---|
+| `planned` | `idle` | No active work |
+| `building` | `building` | Builder is working |
+| `built` | `reviewing` | Ready for reviews |
+| `build_failed` | `build_failed` | Build failed, needs retry |
+| `reviewing` | `reviewing` | Reviews in progress |
+| `changes_requested` | `changes_requested` | Builder must fix review findings |
+| `review_passed` | `qa_verification` | QA verification pending |
+| `qa_passed` | `signoff` | Ready for user sign-off |
+| `signoff` | `signoff` | Sign-off in progress |
+| `done` | `done` | Task complete |
+
+The `planning` and `plan_review` pipeline stages are set manually during phase planning (before any task exists).
+
+## Required Artifacts per State
+
+| State transition | Required artifact before advancing |
+|---|---|
+| → `built` | `BUILDER-REPORT.md` in task directory |
+| → `review_passed` | `reviews/<role>-review.md` for each activated reviewer + `reviews/review-summary.json` |
+| → `qa_passed` | `reviews/qa-verification.md` |
+| → `done` | Explicit user approval (sign-off gate) |
 
 ## Key Paths
 

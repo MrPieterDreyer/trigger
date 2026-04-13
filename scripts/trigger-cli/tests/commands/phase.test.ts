@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import fs from "node:fs/promises";
 import path from "node:path";
 import os from "node:os";
-import { createPhase, listPhases, getPhaseStatus } from "../../src/commands/phase.js";
+import { createPhase, listPhases, getPhaseStatus, advancePhase } from "../../src/commands/phase.js";
 import { createMilestone, getMilestoneStatus } from "../../src/commands/milestone.js";
 import { initProject } from "../../src/commands/init.js";
 import { getState } from "../../src/commands/state.js";
@@ -135,6 +135,51 @@ describe("phase commands", () => {
       await expect(
         getPhaseStatus(tmpDir, "v1", "nonexistent"),
       ).rejects.toThrow();
+    });
+  });
+
+  describe("advancePhase", () => {
+    it("advances from planned to in_progress", async () => {
+      await createPhase(tmpDir, "v1", { id: "p1", name: "Foundation" });
+
+      const phase = await advancePhase(tmpDir, "v1", "p1", "in_progress");
+
+      expect(phase.status).toBe("in_progress");
+    });
+
+    it("advances from in_progress to done", async () => {
+      await createPhase(tmpDir, "v1", { id: "p1", name: "Foundation" });
+      await advancePhase(tmpDir, "v1", "p1", "in_progress");
+
+      const phase = await advancePhase(tmpDir, "v1", "p1", "done");
+
+      expect(phase.status).toBe("done");
+    });
+
+    it("rejects invalid transition planned → done", async () => {
+      await createPhase(tmpDir, "v1", { id: "p1", name: "Foundation" });
+
+      await expect(
+        advancePhase(tmpDir, "v1", "p1", "done"),
+      ).rejects.toThrow(/invalid phase transition/i);
+    });
+
+    it("rejects transition from done (terminal)", async () => {
+      await createPhase(tmpDir, "v1", { id: "p1", name: "Foundation" });
+      await advancePhase(tmpDir, "v1", "p1", "in_progress");
+      await advancePhase(tmpDir, "v1", "p1", "done");
+
+      await expect(
+        advancePhase(tmpDir, "v1", "p1", "in_progress"),
+      ).rejects.toThrow(/invalid phase transition/i);
+    });
+
+    it("persists status change to disk", async () => {
+      await createPhase(tmpDir, "v1", { id: "p1", name: "Foundation" });
+      await advancePhase(tmpDir, "v1", "p1", "in_progress");
+
+      const phase = await getPhaseStatus(tmpDir, "v1", "p1");
+      expect(phase.status).toBe("in_progress");
     });
   });
 });

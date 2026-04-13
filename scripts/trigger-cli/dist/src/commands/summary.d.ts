@@ -33,6 +33,15 @@ export interface SummaryResult {
     } | null;
     pipeline: string;
     verification_commands: number;
+    recent_verdicts: Array<{
+        reviewer: string;
+        verdict: string;
+    }>;
+    artifacts: {
+        builder_report: boolean;
+        review_summary: boolean;
+        qa_verification: boolean;
+    };
 }
 export declare function getSummary(projectRoot: string): Promise<SummaryResult>;
 //# sourceMappingURL=summary.d.ts.map

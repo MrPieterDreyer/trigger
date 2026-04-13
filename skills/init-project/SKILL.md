@@ -31,22 +31,15 @@ Use when the user says **trigger new project**, **start a new project**, or **in
          { id: "balanced", label: "Balanced — require approval at plan review and final sign-off" },
          { id: "autonomous", label: "Autonomous — only pause at final sign-off" }
        ]
-     },
-     {
-       id: "git_branching",
-       prompt: "How should Trigger handle Git branching?",
-       options: [
-         { id: "none", label: "None — work on the current branch" },
-         { id: "per_phase", label: "Per phase — create a branch for each phase" },
-         { id: "per_task", label: "Per task — create a branch for each task" }
-       ]
      }
    ])
    ```
 
    Also ask in conversation: What is this project? Goals, target users, key capabilities (used for PROJECT.md).
 
-   **Do NOT skip the AskQuestion step.** Every project must have explicit user choices for trust level and branching.
+   **Do NOT skip the AskQuestion step.** Every project must have an explicit user choice for trust level.
+
+   *Note: Git branching integration is planned for a future version.*
 
 4. **Initialize** — Run:
 

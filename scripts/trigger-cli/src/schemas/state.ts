@@ -26,6 +26,7 @@ export const StateSchema = z.object({
   active_task: z.string().nullable().default(null),
   pipeline_stage: PipelineStage.default("idle"),
   last_updated: z.string(),
+  paused_at: z.string().nullable().optional(),
   session: SessionInfo.optional(),
 });
 

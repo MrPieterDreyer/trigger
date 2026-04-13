@@ -1,4 +1,4 @@
-export type TaskStatus = "planned" | "building" | "built" | "build_failed" | "reviewing" | "changes_requested" | "review_passed" | "signoff" | "done";
+export type TaskStatus = "planned" | "building" | "built" | "build_failed" | "reviewing" | "changes_requested" | "review_passed" | "qa_passed" | "signoff" | "done";
 export type TransitionResult = {
     success: true;
     from: TaskStatus;

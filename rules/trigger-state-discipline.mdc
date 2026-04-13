@@ -33,7 +33,7 @@ After each step in the pipeline, update the task status immediately:
 | Verification commands fail | task status → "build_failed" |
 | Reviews complete with APPROVE | task status → "review_passed" |
 | Reviews request changes | task status → "changes_requested" |
-| QA verification passes | task status → "review_passed" (stays) |
+| QA verification passes | task status → "qa_passed" |
 | Ready for user sign-off | task status → "signoff" |
 | User approves | task status → "done" |
 

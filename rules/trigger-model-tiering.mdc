@@ -72,20 +72,36 @@ Also check for phase-level overrides in the active phase's `phase.json` under `t
 
 ## Role Activation Logic
 
-For roles with `enabled: "auto"`, determine whether to activate by:
+For roles with `enabled: "auto"`, you MUST systematically determine whether to activate. Do NOT rely on intuition or "common sense" — evaluate every rule.
 
-1. **Check plan metadata** — if the task's `domains` array includes a relevant domain (e.g., "security", "database"), activate the corresponding reviewer
-2. **Check file paths** — match changed files against activation rule globs in `trigger.json`:
+### Activation procedure (run for EVERY auto-enabled reviewer):
+
+1. **Check `always` flag** — if `always: true` is set on the role in `trigger.json` → activate, stop checking.
+2. **Check plan metadata** — if the task's `domains` array includes a relevant domain (e.g., `"security"` → `security_reviewer`, `"database"` → `database_reviewer`, `"devops"` → `devops_reviewer`, `"performance"` → `performance_reviewer`, `"accessibility"` → `accessibility_reviewer`) → activate.
+3. **Check file paths** — list ALL files created or modified by the Builder. For each file, match against `activation_rules.<reviewer>.globs` in `trigger.json`. If ANY file matches ANY glob → activate. Example:
    ```json
    {
      "activation_rules": {
-       "security_reviewer": { "globs": ["**/auth/**", "**/api/**"] }
+       "security_reviewer": { "globs": ["**/auth/**", "**/api/**", "**/*.env*"] },
+       "performance_reviewer": { "globs": ["**/hooks/queries/**", "**/components/**", "**/app/**/*.tsx"] }
      }
    }
    ```
-3. **Force overrides** — if `always: true` is set on a role, always activate regardless of other conditions
+   A file like `src/app/layout.tsx` matches `**/app/**/*.tsx` → `performance_reviewer` activates.
 
-The Code Reviewer is always activated. All other reviewers follow the activation logic above.
+4. **Log every decision.** Before starting reviews, output:
+   ```
+   Reviewer activation for task <t>:
+   - code_reviewer: ACTIVE (enabled: true)
+   - security_reviewer: SKIP (enabled: auto, no domain match, no file match)
+   - performance_reviewer: ACTIVE (enabled: auto, file match: src/components/Button.tsx → **/components/**)
+   - accessibility_reviewer: ACTIVE (enabled: auto, file match: src/app/page.tsx → **/app/**/*.tsx)
+   - database_reviewer: SKIP (enabled: auto, no domain match, no file match)
+   - devops_reviewer: SKIP (enabled: auto, no domain match, no file match)
+   - qa_verifier: ACTIVE (enabled: true)
+   ```
+
+The Code Reviewer and QA Verifier are always activated when `enabled: true`. All other reviewers follow the activation procedure above. **Skipping a reviewer that should have been activated by glob match is a framework violation.**
 
 ## Parallel Review Batch
 
@@ -108,11 +124,9 @@ To disable parallel reviews, set `parallelism.reviews: false` in `trigger.json` 
 
 ## Anti-AI-Slop Pass
 
-After the Builder completes, run a lightweight quality pass:
-- For code: apply `deslop` patterns (remove AI-generated code style artifacts)
-- For documentation: apply `humanizer` patterns (remove AI writing tells)
+The Builder agent definition (`agents/builder.md`) includes anti-slop instructions: no comments that restate code, no unnecessary abstractions, match existing naming and structure. This is enforced as part of the Builder's work, not a separate pipeline step.
 
-This is a fast-model pass that runs automatically as part of the Builder's work, not a separate team role.
+The code reviewer also checks for AI slop as part of its standard review areas. No additional pass is needed.
 
 ## Escalation Model Override
 

@@ -13,4 +13,5 @@ export { StateMachine } from "./lib/state-machine.js";
 export { PROJECT_TYPES } from "./defaults/project-types.js";
 export { DEFAULT_TEAM, DEFAULT_ACTIVATION_RULES, DEFAULT_ESCALATION } from "./defaults/team-defaults.js";
 export { ProjectDetector } from "./lib/detector.js";
+export { listReviewers } from "./commands/reviewers.js";
 //# sourceMappingURL=index.js.map

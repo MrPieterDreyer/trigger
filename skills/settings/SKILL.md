@@ -144,13 +144,16 @@ Use when the user says **trigger settings**, **change settings**, **update confi
    ### Verification commands
    Show the current list and ask in conversation what to add, remove, or change. No AskQuestion needed — this is free-form.
 
-4. **Apply changes** — Build the update object from user selections and run:
+4. **Apply changes** — For each setting changed, use the dotted key path:
 
    ```bash
-   node <TRIGGER_CLI>/dist/bin/trigger.js config set <key> <value>
+   trigger config set project.trust_level balanced
+   trigger config set team.security_reviewer.enabled true
+   trigger config set guardian.auto_review false
+   trigger config set parallelism.max_concurrent_tasks 5
    ```
 
-   Or for complex updates, read trigger.json, apply changes, validate through the schema, and write back.
+   The `config set` command accepts dotted keys (e.g., `team.security_reviewer.enabled`), deep-merges into the existing config, and validates against the schema. Values are JSON-parsed automatically: `true`/`false` become booleans, numbers stay numbers, strings stay strings.
 
 5. **Confirm** — Show a summary of what changed and the new values. Run `trigger validate` to ensure the config is still valid.
 

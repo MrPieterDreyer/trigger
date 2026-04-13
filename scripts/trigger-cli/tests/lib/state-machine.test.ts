@@ -38,8 +38,12 @@ describe("StateMachine", () => {
       expect(sm.canTransition("changes_requested", "building")).toBe(true);
     });
 
-    it("allows review_passed → signoff", () => {
-      expect(sm.canTransition("review_passed", "signoff")).toBe(true);
+    it("allows review_passed → qa_passed", () => {
+      expect(sm.canTransition("review_passed", "qa_passed")).toBe(true);
+    });
+
+    it("allows qa_passed → signoff", () => {
+      expect(sm.canTransition("qa_passed", "signoff")).toBe(true);
     });
 
     it("allows signoff → done", () => {
@@ -86,8 +90,8 @@ describe("StateMachine", () => {
       expect(valid).not.toContain("planned");
     });
 
-    it("returns empty array for done (terminal)", () => {
-      expect(sm.validTransitions("done")).toEqual([]);
+    it("returns ['changes_requested'] for done (reopen)", () => {
+      expect(sm.validTransitions("done")).toEqual(["changes_requested"]);
     });
 
     it("returns ['done', 'changes_requested'] for signoff", () => {
@@ -134,12 +138,21 @@ describe("StateMachine", () => {
       }
     });
 
-    it("returns error for transitions from done", () => {
+    it("returns error for invalid transitions from done", () => {
       const result = sm.transition("done", "building");
       expect(result.success).toBe(false);
       if (!result.success) {
         expect(result.error).toContain("done");
-        expect(result.error).toContain("terminal");
+        expect(result.error).toContain("changes_requested");
+      }
+    });
+
+    it("allows done → changes_requested (reopen)", () => {
+      const result = sm.transition("done", "changes_requested");
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.from).toBe("done");
+        expect(result.to).toBe("changes_requested");
       }
     });
   });
@@ -161,7 +174,7 @@ describe("StateMachine", () => {
     it("supports full lifecycle from planned to done", () => {
       const lifecycle: TaskStatus[] = [
         "planned", "building", "built", "reviewing",
-        "review_passed", "signoff", "done",
+        "review_passed", "qa_passed", "signoff", "done",
       ];
 
       for (let i = 0; i < lifecycle.length - 1; i++) {
