@@ -11,12 +11,12 @@ describe("state commands", () => {
   const fm = new FileManager();
 
   function writeState(state: unknown): Promise<void> {
-    return fm.writeJson(path.join(tmpDir, ".planning", "state.json"), state);
+    return fm.writeJson(path.join(tmpDir, ".trigger", "state.json"), state);
   }
 
   beforeEach(async () => {
     tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "trigger-state-"));
-    await fs.mkdir(path.join(tmpDir, ".planning"), { recursive: true });
+    await fs.mkdir(path.join(tmpDir, ".trigger"), { recursive: true });
     await writeState({
       active_milestone: null,
       active_phase: null,

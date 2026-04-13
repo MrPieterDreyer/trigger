@@ -35,7 +35,7 @@ describe("task commands", () => {
       expect(task.history).toEqual([]);
 
       const taskDir = path.join(
-        tmpDir, ".planning", "milestones", "v1", "phases", "p1", "tasks", "t1",
+        tmpDir, ".trigger", "milestones", "v1", "phases", "p1", "tasks", "t1",
       );
       const stat = await fs.stat(taskDir);
       expect(stat.isDirectory()).toBe(true);

@@ -9,7 +9,7 @@ Use when the user is ready to **approve** or **request changes** after build, re
 
 **CLI:** Resolve per `trigger-core.mdc` — bundled at `<plugin-root>/scripts/trigger-cli/`.
 
-1. Read **`.planning/state.json`** (and confirm `m` / `p` / `t` with `trigger state get` if needed) for the active task and its `status`.
+1. Read **`.trigger/state.json`** (and confirm `m` / `p` / `t` with `trigger state get` if needed) for the active task and its `status`.
 2. If status is not **`signoff`**, stop: explain the current status and what must happen first (e.g. complete Builder, Step 3 reviews, or Step 4 QA via **execute-task**).
 3. Present a short summary: what was built (**`BUILDER-REPORT.md`** in the task dir), review verdicts (**`reviews/`**, including **`review-summary.json`** if present), QA (**`reviews/qa-verification.md`**), and known risks or limits called out in those files.
 4. Ask the user to choose:

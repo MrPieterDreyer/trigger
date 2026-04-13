@@ -9,7 +9,7 @@ Use when the user says **trigger execute phase N**, **run phase**, **build phase
 
 ## Step 1 — Load phase context
 
-1. Read `state.json` (under the project’s Trigger `.planning/` tree). Resolve active milestone and phase; if the user gave a phase number, use it.
+1. Read `state.json` (under the project’s Trigger `.trigger/` tree). Resolve active milestone and phase; if the user gave a phase number, use it.
 2. Open that phase’s `phase.json` and read the ordered task list.
 3. Read `trigger.json` for trust level and execution constraints.
 4. If there are no tasks, stop: tell the user to run **trigger plan phase N** first.

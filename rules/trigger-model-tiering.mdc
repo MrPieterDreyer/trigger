@@ -52,7 +52,7 @@ For stack-specific projects, the Builder subagent_type can be adjusted:
 
 ## Reading Project Overrides
 
-Before spawning any team role, check `.planning/trigger.json` for per-project overrides:
+Before spawning any team role, check `.trigger/trigger.json` for per-project overrides:
 
 ```json
 {

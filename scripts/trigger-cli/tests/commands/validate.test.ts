@@ -32,22 +32,22 @@ describe("validateProject", () => {
     expect(result.errors).toEqual([]);
   });
 
-  it("missing .planning returns error", async () => {
+  it("missing .trigger returns error", async () => {
     const result = await validateProject(tmpDir);
 
     expect(result.valid).toBe(false);
     expect(result.errors.length).toBeGreaterThan(0);
-    expect(result.errors.some((e) => /\.planning/i.test(e))).toBe(true);
+    expect(result.errors.some((e) => /\.trigger/i.test(e))).toBe(true);
   });
 
   it("invalid trigger.json returns schema errors", async () => {
-    await fs.mkdir(path.join(tmpDir, ".planning"), { recursive: true });
+    await fs.mkdir(path.join(tmpDir, ".trigger"), { recursive: true });
     await fs.writeFile(
-      path.join(tmpDir, ".planning", "trigger.json"),
+      path.join(tmpDir, ".trigger", "trigger.json"),
       JSON.stringify({ invalid: true }),
     );
     await fs.writeFile(
-      path.join(tmpDir, ".planning", "state.json"),
+      path.join(tmpDir, ".trigger", "state.json"),
       JSON.stringify({
         active_milestone: null,
         active_phase: null,

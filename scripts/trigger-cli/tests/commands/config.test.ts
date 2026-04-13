@@ -12,14 +12,14 @@ describe("config commands", () => {
 
   function writeConfig(config: unknown): Promise<void> {
     return fm.writeJson(
-      path.join(tmpDir, ".planning", "trigger.json"),
+      path.join(tmpDir, ".trigger", "trigger.json"),
       config,
     );
   }
 
   beforeEach(async () => {
     tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "trigger-config-"));
-    await fs.mkdir(path.join(tmpDir, ".planning"), { recursive: true });
+    await fs.mkdir(path.join(tmpDir, ".trigger"), { recursive: true });
     await writeConfig({
       project: { name: "test-app", type: "node" },
     });
@@ -39,7 +39,7 @@ describe("config commands", () => {
     });
 
     it("validates config through schema", async () => {
-      await fm.writeJson(path.join(tmpDir, ".planning", "trigger.json"), {
+      await fm.writeJson(path.join(tmpDir, ".trigger", "trigger.json"), {
         project: { name: 123 },
       });
 

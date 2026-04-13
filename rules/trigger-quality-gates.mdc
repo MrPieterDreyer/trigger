@@ -5,7 +5,7 @@ alwaysApply: true
 
 # Trigger Quality Gates
 
-When working within a Trigger-managed project (a project with a `.planning/` directory containing `trigger.json`), these quality gates are mandatory.
+When working within a Trigger-managed project (a project with a `.trigger/` directory containing `trigger.json`), these quality gates are mandatory.
 
 ## Gate Principles
 
@@ -18,7 +18,7 @@ When working within a Trigger-managed project (a project with a `.planning/` dir
 
 When acting as the Builder role:
 
-1. Read the verification commands from `.planning/trigger.json` under `verification.commands`
+1. Read the verification commands from `.trigger/trigger.json` under `verification.commands`
 2. After implementing code and tests, run **every required command** in order
 3. If any required command fails:
    - Fix the issue

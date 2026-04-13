@@ -12,7 +12,7 @@ export async function validateProject(projectRoot) {
     const errors = [];
     const warnings = [];
     if (!(await fm.exists(paths.planningRoot))) {
-        return { valid: false, errors: [".planning directory not found"], warnings };
+        return { valid: false, errors: [".trigger directory not found"], warnings };
     }
     let hasConfig = false;
     if (await fm.exists(paths.configPath)) {

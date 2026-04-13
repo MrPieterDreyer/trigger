@@ -31,7 +31,7 @@ describe("milestone commands", () => {
       expect(milestone.status).toBe("planned");
       expect(milestone.phases).toEqual([]);
 
-      const msDir = path.join(tmpDir, ".planning", "milestones", "v1");
+      const msDir = path.join(tmpDir, ".trigger", "milestones", "v1");
       const stat = await fs.stat(msDir);
       expect(stat.isDirectory()).toBe(true);
 

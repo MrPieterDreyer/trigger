@@ -8,18 +8,18 @@ describe("TriggerPaths", () => {
 
   describe("root paths", () => {
     it("resolves planningRoot", () => {
-      expect(paths.planningRoot).toBe(path.join(root, ".planning"));
+      expect(paths.planningRoot).toBe(path.join(root, ".trigger"));
     });
 
     it("resolves configPath", () => {
       expect(paths.configPath).toBe(
-        path.join(root, ".planning", "trigger.json"),
+        path.join(root, ".trigger", "trigger.json"),
       );
     });
 
     it("resolves statePath", () => {
       expect(paths.statePath).toBe(
-        path.join(root, ".planning", "state.json"),
+        path.join(root, ".trigger", "state.json"),
       );
     });
   });
@@ -29,25 +29,25 @@ describe("TriggerPaths", () => {
 
     it("resolves milestonesDir", () => {
       expect(paths.milestonesDir()).toBe(
-        path.join(root, ".planning", "milestones"),
+        path.join(root, ".trigger", "milestones"),
       );
     });
 
     it("resolves milestoneDir", () => {
       expect(paths.milestoneDir(milestoneId)).toBe(
-        path.join(root, ".planning", "milestones", milestoneId),
+        path.join(root, ".trigger", "milestones", milestoneId),
       );
     });
 
     it("resolves milestonePath", () => {
       expect(paths.milestonePath(milestoneId)).toBe(
-        path.join(root, ".planning", "milestones", milestoneId, "milestone.json"),
+        path.join(root, ".trigger", "milestones", milestoneId, "milestone.json"),
       );
     });
 
     it("resolves roadmapPath", () => {
       expect(paths.roadmapPath(milestoneId)).toBe(
-        path.join(root, ".planning", "milestones", milestoneId, "ROADMAP.md"),
+        path.join(root, ".trigger", "milestones", milestoneId, "ROADMAP.md"),
       );
     });
   });
@@ -58,20 +58,20 @@ describe("TriggerPaths", () => {
 
     it("resolves phasesDir", () => {
       expect(paths.phasesDir(milestoneId)).toBe(
-        path.join(root, ".planning", "milestones", milestoneId, "phases"),
+        path.join(root, ".trigger", "milestones", milestoneId, "phases"),
       );
     });
 
     it("resolves phaseDir", () => {
       expect(paths.phaseDir(milestoneId, phaseId)).toBe(
-        path.join(root, ".planning", "milestones", milestoneId, "phases", phaseId),
+        path.join(root, ".trigger", "milestones", milestoneId, "phases", phaseId),
       );
     });
 
     it("resolves phasePath", () => {
       expect(paths.phasePath(milestoneId, phaseId)).toBe(
         path.join(
-          root, ".planning", "milestones", milestoneId,
+          root, ".trigger", "milestones", milestoneId,
           "phases", phaseId, "phase.json",
         ),
       );
@@ -80,7 +80,7 @@ describe("TriggerPaths", () => {
     it("resolves researchDir", () => {
       expect(paths.researchDir(milestoneId, phaseId)).toBe(
         path.join(
-          root, ".planning", "milestones", milestoneId,
+          root, ".trigger", "milestones", milestoneId,
           "phases", phaseId, "research",
         ),
       );
@@ -89,7 +89,7 @@ describe("TriggerPaths", () => {
     it("resolves phaseSummaryPath", () => {
       expect(paths.phaseSummaryPath(milestoneId, phaseId)).toBe(
         path.join(
-          root, ".planning", "milestones", milestoneId,
+          root, ".trigger", "milestones", milestoneId,
           "phases", phaseId, "phase-summary.json",
         ),
       );
@@ -104,7 +104,7 @@ describe("TriggerPaths", () => {
     it("resolves tasksDir", () => {
       expect(paths.tasksDir(milestoneId, phaseId)).toBe(
         path.join(
-          root, ".planning", "milestones", milestoneId,
+          root, ".trigger", "milestones", milestoneId,
           "phases", phaseId, "tasks",
         ),
       );
@@ -113,7 +113,7 @@ describe("TriggerPaths", () => {
     it("resolves taskDir", () => {
       expect(paths.taskDir(milestoneId, phaseId, taskId)).toBe(
         path.join(
-          root, ".planning", "milestones", milestoneId,
+          root, ".trigger", "milestones", milestoneId,
           "phases", phaseId, "tasks", taskId,
         ),
       );
@@ -122,7 +122,7 @@ describe("TriggerPaths", () => {
     it("resolves taskPath", () => {
       expect(paths.taskPath(milestoneId, phaseId, taskId)).toBe(
         path.join(
-          root, ".planning", "milestones", milestoneId,
+          root, ".trigger", "milestones", milestoneId,
           "phases", phaseId, "tasks", taskId, "task.json",
         ),
       );
@@ -131,7 +131,7 @@ describe("TriggerPaths", () => {
     it("resolves planPath", () => {
       expect(paths.planPath(milestoneId, phaseId, taskId)).toBe(
         path.join(
-          root, ".planning", "milestones", milestoneId,
+          root, ".trigger", "milestones", milestoneId,
           "phases", phaseId, "tasks", taskId, "PLAN.md",
         ),
       );
@@ -140,7 +140,7 @@ describe("TriggerPaths", () => {
     it("resolves builderReportPath", () => {
       expect(paths.builderReportPath(milestoneId, phaseId, taskId)).toBe(
         path.join(
-          root, ".planning", "milestones", milestoneId,
+          root, ".trigger", "milestones", milestoneId,
           "phases", phaseId, "tasks", taskId, "BUILDER-REPORT.md",
         ),
       );
@@ -149,7 +149,7 @@ describe("TriggerPaths", () => {
     it("resolves signoffPath", () => {
       expect(paths.signoffPath(milestoneId, phaseId, taskId)).toBe(
         path.join(
-          root, ".planning", "milestones", milestoneId,
+          root, ".trigger", "milestones", milestoneId,
           "phases", phaseId, "tasks", taskId, "SIGNOFF.md",
         ),
       );
@@ -164,7 +164,7 @@ describe("TriggerPaths", () => {
     it("resolves reviewsDir", () => {
       expect(paths.reviewsDir(milestoneId, phaseId, taskId)).toBe(
         path.join(
-          root, ".planning", "milestones", milestoneId,
+          root, ".trigger", "milestones", milestoneId,
           "phases", phaseId, "tasks", taskId, "reviews",
         ),
       );
@@ -173,7 +173,7 @@ describe("TriggerPaths", () => {
     it("resolves reviewSummaryPath", () => {
       expect(paths.reviewSummaryPath(milestoneId, phaseId, taskId)).toBe(
         path.join(
-          root, ".planning", "milestones", milestoneId,
+          root, ".trigger", "milestones", milestoneId,
           "phases", phaseId, "tasks", taskId, "reviews", "review-summary.json",
         ),
       );

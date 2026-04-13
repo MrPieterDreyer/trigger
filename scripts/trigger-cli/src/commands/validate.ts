@@ -21,7 +21,7 @@ export async function validateProject(projectRoot: string): Promise<ValidationRe
   const warnings: string[] = [];
 
   if (!(await fm.exists(paths.planningRoot))) {
-    return { valid: false, errors: [".planning directory not found"], warnings };
+    return { valid: false, errors: [".trigger directory not found"], warnings };
   }
 
   let hasConfig = false;

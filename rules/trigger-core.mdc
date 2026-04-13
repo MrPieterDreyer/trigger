@@ -5,7 +5,7 @@ alwaysApply: true
 
 # Trigger Framework
 
-Trigger is an AI Product Team framework that orchestrates cost-optimized model routing, mandatory quality gates, and automated build-review pipelines. It manages project state through a CLI toolkit and `.planning/` directory.
+Trigger is an AI Product Team framework that orchestrates cost-optimized model routing, mandatory quality gates, and automated build-review pipelines. It manages project state through a CLI toolkit and `.trigger/` directory.
 
 ## Detecting Trigger Requests
 
@@ -71,7 +71,7 @@ When the user says anything matching the trigger phrases below, follow the corre
 
 | Trigger phrases | Action |
 |---|---|
-| "trigger config", "show settings", "change trust level" | Read/update `.planning/trigger.json` via CLI `config get/set` |
+| "trigger config", "show settings", "change trust level" | Read/update `.trigger/trigger.json` via CLI `config get/set` |
 
 ### Quick Tasks
 
@@ -89,8 +89,8 @@ When the user says anything matching the trigger phrases below, follow the corre
 
 1. **Read the skill file** — Cursor discovers skills by name from this plugin's `skills/` directory
 2. **Resolve the CLI path** (see CLI Tool section below)
-3. **Read `.planning/state.json`** via CLI: `node <TRIGGER_CLI>/dist/bin/trigger.js state get`
-4. **Read `.planning/trigger.json`** via CLI: `node <TRIGGER_CLI>/dist/bin/trigger.js config get`
+3. **Read `.trigger/state.json`** via CLI: `node <TRIGGER_CLI>/dist/bin/trigger.js state get`
+4. **Read `.trigger/trigger.json`** via CLI: `node <TRIGGER_CLI>/dist/bin/trigger.js config get`
 5. **Follow the skill steps** in order, respecting all gates and checkpoints
 
 ## CLI Tool
@@ -141,6 +141,6 @@ Trigger orchestrates an AI Product Team. Each role is defined as an agent file i
 - Skills: `<plugin-root>/skills/`
 - Agents: `<plugin-root>/agents/`
 - CLI: `<plugin-root>/scripts/trigger-cli/`
-- Planning output: `.planning/` (in the user's project)
-- Project config: `.planning/trigger.json`
-- Project state: `.planning/state.json`
+- Planning output: `.trigger/` (in the user's project)
+- Project config: `.trigger/trigger.json`
+- Project state: `.trigger/state.json`

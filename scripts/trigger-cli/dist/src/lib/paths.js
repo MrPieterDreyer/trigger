@@ -6,7 +6,7 @@ export class TriggerPaths {
     statePath;
     constructor(projectRoot) {
         this.projectRoot = projectRoot;
-        this.planningRoot = path.join(projectRoot, ".planning");
+        this.planningRoot = path.join(projectRoot, ".trigger");
         this.configPath = path.join(this.planningRoot, "trigger.json");
         this.statePath = path.join(this.planningRoot, "state.json");
     }

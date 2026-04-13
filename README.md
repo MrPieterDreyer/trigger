@@ -6,7 +6,7 @@ Trigger turns Cursor into a small, disciplined product team. It routes work thro
 
 - **Model tiering** — Capable models plan and review. Fast models build. Each role has an explicit model assignment so you spend tokens where they matter.
 - **Quality gates** — Verification commands must pass. Reviews produce verdicts. Acceptance criteria are checked. You still approve at the end.
-- **Structured pipeline** — Plan, build, review, verify, sign-off. State lives in `.planning/` and advances through the CLI.
+- **Structured pipeline** — Plan, build, review, verify, sign-off. State lives in `.trigger/` and advances through the CLI.
 - **Configurable team** — Enable or skip specialist reviewers. Activation rules tie them to file paths and task metadata.
 - **Stack-agnostic** — Same workflow for Next.js, .NET, Python, Go, Rust, Ruby, or anything else. You define the verification commands.
 
@@ -42,7 +42,7 @@ Trigger turns Cursor into a small, disciplined product team. It routes work thro
 ## Quick start
 
 1. Say **trigger new project** in Cursor chat and follow the prompts
-2. Adjust `.planning/trigger.json` if you want different reviewers, trust level, or verification commands
+2. Adjust `.trigger/trigger.json` if you want different reviewers, trust level, or verification commands
 3. Say **trigger plan phase 1** to research, plan, and review before building
 4. Say **trigger execute phase 1** to run each task through the full pipeline
 
@@ -82,7 +82,7 @@ Specialist reviewers activate based on task domains, changed file paths, and `ac
 
 ## Configuration
 
-`.planning/trigger.json` is the project contract:
+`.trigger/trigger.json` is the project contract:
 
 - **`verification.commands`** — ordered shell commands the Builder must run (test, lint, typecheck, etc.)
 - **`team.<role>.enabled`** — `true`, `false`, or `"auto"` per role; `team.<role>.model` overrides tiering

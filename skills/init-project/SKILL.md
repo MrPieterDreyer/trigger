@@ -1,6 +1,6 @@
 ---
 name: init-project
-description: Initialize a new Trigger-managed project with auto-detected configuration, team defaults, and .planning directory structure.
+description: Initialize a new Trigger-managed project with auto-detected configuration, team defaults, and .trigger directory structure.
 ---
 
 # Init project
@@ -11,7 +11,7 @@ Use when the user says **trigger new project**, **start a new project**, or **in
 
 ## Process
 
-1. **Check for existing project** — Run `trigger validate`. If `.planning/` already exists or validation shows this repo is already Trigger-managed, tell the user and stop.
+1. **Check for existing project** — Run `trigger validate`. If `.trigger/` already exists or validation shows this repo is already Trigger-managed, tell the user and stop.
 
 2. **Detect project type** — Do not infer by hand. The CLI detects from files such as `package.json`, `tsconfig.json`, `*.csproj`, `requirements.txt`, `go.mod`, `Cargo.toml`, and `Gemfile`. `trigger init <name>` performs this.
 

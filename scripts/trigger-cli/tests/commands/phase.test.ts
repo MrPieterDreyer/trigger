@@ -34,7 +34,7 @@ describe("phase commands", () => {
       expect(phase.tasks).toEqual([]);
 
       const phaseDir = path.join(
-        tmpDir, ".planning", "milestones", "v1", "phases", "p1",
+        tmpDir, ".trigger", "milestones", "v1", "phases", "p1",
       );
       const stat = await fs.stat(phaseDir);
       expect(stat.isDirectory()).toBe(true);

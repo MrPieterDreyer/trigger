@@ -17,10 +17,10 @@ describe("initProject", () => {
     await fs.rm(tmpDir, { recursive: true, force: true });
   });
 
-  it("creates .planning directory structure", async () => {
+  it("creates .trigger directory structure", async () => {
     await initProject(tmpDir, { name: "my-app" });
 
-    const stat = await fs.stat(path.join(tmpDir, ".planning"));
+    const stat = await fs.stat(path.join(tmpDir, ".trigger"));
     expect(stat.isDirectory()).toBe(true);
   });
 
@@ -39,7 +39,7 @@ describe("initProject", () => {
     const result = await initProject(tmpDir, { name: "test-app" });
 
     const raw = await fs.readFile(
-      path.join(tmpDir, ".planning", "state.json"),
+      path.join(tmpDir, ".trigger", "state.json"),
       "utf-8",
     );
     const state = StateSchema.parse(JSON.parse(raw));
@@ -51,8 +51,8 @@ describe("initProject", () => {
     expect(result.detection).toBeDefined();
   });
 
-  it("refuses to init if .planning already exists", async () => {
-    await fs.mkdir(path.join(tmpDir, ".planning"));
+  it("refuses to init if .trigger already exists", async () => {
+    await fs.mkdir(path.join(tmpDir, ".trigger"));
 
     await expect(
       initProject(tmpDir, { name: "dupe" }),
@@ -83,7 +83,7 @@ describe("initProject", () => {
     await initProject(tmpDir, { name: "disk-app" });
 
     const raw = await fs.readFile(
-      path.join(tmpDir, ".planning", "trigger.json"),
+      path.join(tmpDir, ".trigger", "trigger.json"),
       "utf-8",
     );
     const parsed = TriggerConfigSchema.parse(JSON.parse(raw));

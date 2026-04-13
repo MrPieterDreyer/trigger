@@ -9,7 +9,7 @@ Use when the user says **trigger plan phase N**, **plan the next phase**, or equ
 
 ## Step 1 — Context
 
-1. Read `.planning/` `state.json` for the active milestone.
+1. Read `.trigger/` `state.json` for the active milestone.
 2. Read `milestone.json` for the phase list. If phase **N** is missing, stop: tell the user to add the phase first.
 3. Read `trigger.json` for team / trust config.
 4. In the phase directory, read any existing context (requirements, user stories, notes).
